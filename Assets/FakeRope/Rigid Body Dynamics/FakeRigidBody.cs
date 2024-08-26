@@ -6,7 +6,7 @@ using Unity.Mathematics;
 
 namespace Fake.RigidBodyDynamics
 {
-	public class FakeRigidBody : IDynamicBody
+	public class FakeRigidBody : IDynamicBody, ICollidingBody
 	{
 		private const float k_MaxRotationPerSubstep = 0.5f;
 
@@ -52,6 +52,8 @@ namespace Fake.RigidBodyDynamics
 		public bool IsKinematic => m_IsKinematic;
 
 		public FakePose Pose => m_Pose;
+
+		public FakeBoxCollider BoxCollider => m_BoxCollider;
 
 		public void UpdateWith(FakePose pose)
 		{
@@ -161,10 +163,6 @@ namespace Fake.RigidBodyDynamics
 
 		private void ApplyRotation(float3 rotation, float scale = 1.0f)
 		{
-			// Safety clamping. This happens very rarely if the solver
-			// wants to turn the body by more than 30 degrees in the
-			// orders of milliseconds
-
 			var phi = math.length(rotation);
 
 			if (phi * scale > k_MaxRotationPerSubstep)
@@ -187,59 +185,6 @@ namespace Fake.RigidBodyDynamics
 			quaternion = math.normalize(quaternion);
 
 			m_Pose = Computations.SetRotation(m_Pose, quaternion);
-		}
-	}
-
-	public static partial class RigidBodyComputations
-	{
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static void ApplyBodyPairCorrection(
-			FakeRigidBody body0,
-			FakeRigidBody body1,
-			float3 correction,
-			float compliance,
-			float deltaTime,
-			float3? position0 = null,
-			float3? position1 = null,
-			bool velocityLevel = false)
-		{
-			var correctionLength = math.length(correction);
-
-			if (correctionLength == 0.0f)
-			{
-				return;
-			}
-
-			body0 = body0 == null ? null : body0.IsKinematic ? null : body0;
-			body1 = body1 == null ? null : body1.IsKinematic ? null : body1;
-
-			if (body0 == null && body1 == null)
-			{
-				return;
-			}
-
-			var normal = correction / correctionLength;
-
-			var w0 = body0 == null ? 0.0f : body0.GetInverseMass(normal, position0);
-			var w1 = body1 == null ? 0.0f : body1.GetInverseMass(normal, position1);
-
-			var w = w0 + w1;
-
-			if (w == 0.0f)
-			{
-				return;
-			}
-
-			var lambda = -correctionLength / (w + compliance / (deltaTime * deltaTime));
-			normal *= -lambda;
-
-			body0?.ApplyCorrection(normal, position0, velocityLevel);
-
-			if (body1 != null)
-			{
-				normal = -normal;
-				body1.ApplyCorrection(normal, position1, velocityLevel);
-			}
 		}
 	}
 }

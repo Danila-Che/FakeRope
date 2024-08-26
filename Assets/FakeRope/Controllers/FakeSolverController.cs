@@ -38,24 +38,26 @@ namespace Fake.Controllers
 
 		public void RegisterRigidBody(FakeRigidBody body)
 		{
-			m_Solver.AddBody(body);
+			m_Solver.Add((IDynamicBody)body);
+			m_Solver.Add((ICollidingBody)body);
 		}
 
 		public void UnregisterRigidBody(FakeRigidBody body)
 		{
-			m_Solver.RemoveBody(body);
+			m_Solver.Remove((IDynamicBody)body);
+			m_Solver.Remove((ICollidingBody)body);
 		}
 
 		public void RegisterSolfBody(FakeRope body)
 		{
-			m_Solver.AddBody((IDynamicBody)body);
-			m_Solver.AddBody((IConstrainedBody)body);
+			m_Solver.Add((IDynamicBody)body);
+			m_Solver.Add((IConstrainedBody)body);
 		}
 
 		public void UnregisterSolfBody(FakeRope body)
 		{
-			m_Solver.RemoveBody((IDynamicBody)body);
-			m_Solver.RemoveBody((IConstrainedBody)body);
+			m_Solver.Remove((IDynamicBody)body);
+			m_Solver.Remove((IConstrainedBody)body);
 		}
 	}
 }

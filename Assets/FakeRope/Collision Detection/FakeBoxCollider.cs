@@ -7,7 +7,7 @@ namespace Fake.CollisionDetection
 {
 	public readonly struct FakeBoxCollider
 	{
-		private const int k_BoxVerticesCount = 8;
+		public const int k_BoxVerticesCount = 8;
 
 		public readonly BoxCollider UnityBoxCollider;
 		public readonly float3[] WorldVertices;
@@ -90,6 +90,21 @@ namespace Fake.CollisionDetection
 				y = 1.0f / inertiaTensor.y,
 				z = 1.0f / inertiaTensor.z,
 			};
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static AABB CalculateBounds(FakeBoxCollider boxCollider)
+		{
+			var min = boxCollider.WorldVertices[0];
+			var max = boxCollider.WorldVertices[0];
+
+			for (int i = 1; i < FakeBoxCollider.k_BoxVerticesCount; i++)
+			{
+				min = math.min(min, boxCollider.WorldVertices[i]);
+				max = math.max(max, boxCollider.WorldVertices[i]);
+			}
+
+			return new AABB(min, max);
 		}
 	}
 }

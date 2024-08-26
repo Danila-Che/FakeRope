@@ -231,7 +231,7 @@ namespace Fake.SoftBodyDynamics
 
 			if (math.any(correction))
 			{
-				RigidBodyComputations.ApplyBodyPairCorrection(
+				DynamicsComputations.ApplyBodyPairCorrection(
 					body,
 					null,
 					correction,

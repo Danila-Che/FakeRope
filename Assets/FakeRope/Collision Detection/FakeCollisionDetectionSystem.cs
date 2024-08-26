@@ -20,7 +20,10 @@ namespace Fake.CollisionDetection
 			collider.Update(pose);
 			otherCollider.Update(otherPose);
 
-			var mayIntersects = collider.UnityBoxCollider.bounds.Intersects(otherCollider.UnityBoxCollider.bounds);
+			var bounds0 = CollisionComputations.CalculateBounds(collider);
+			var bounds1 = CollisionComputations.CalculateBounds(otherCollider);
+
+			var mayIntersects = Computations.Intersects(bounds0, bounds1);
 
 			if (mayIntersects && CollisionComputations.TryCalculatePenetration(collider, pose, otherCollider, otherPose, out contactPair))
 			{

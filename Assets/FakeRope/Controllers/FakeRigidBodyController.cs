@@ -49,10 +49,8 @@ namespace Fake.Controllers
 		{
 			if (m_Body.IsKinematic) { return; }
 
-			var pose = m_Body.Pose;
-
-			m_Rigidbody.position = pose.Position;
-			m_Rigidbody.rotation = pose.Rotation;
+			m_Rigidbody.position = m_Body.Pose.Position;
+			m_Rigidbody.rotation = m_Body.Pose.Rotation;
 		}
 
 		private void OnBeforeStep()
