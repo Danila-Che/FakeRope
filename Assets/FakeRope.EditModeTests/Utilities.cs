@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Unity.Mathematics;
 
-namespace FakeRope.EditModeTests.Utilities
+namespace Fake.EditModeTests.Utilities
 {
 	public static class Utilities
 	{

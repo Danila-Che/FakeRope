@@ -2,7 +2,7 @@ using System;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace FakeRope.Dynamics
+namespace Fake.Dynamics
 {
 	[Serializable]
 	public class SolverArgs

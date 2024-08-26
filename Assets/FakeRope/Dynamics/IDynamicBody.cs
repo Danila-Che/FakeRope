@@ -1,6 +1,6 @@
 using Unity.Mathematics;
 
-namespace FakeRope.Dynamics
+namespace Fake.Dynamics
 {
     public interface IDynamicBody
     {

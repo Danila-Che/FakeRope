@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using Unity.Mathematics;
 
-namespace FakeRope.CollisionDetection
+namespace Fake.CollisionDetection
 {
 	public readonly struct FakeLine
 	{

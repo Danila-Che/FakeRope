@@ -1,4 +1,4 @@
-namespace FakeRope.Dynamics
+namespace Fake.Dynamics
 {
 	public interface IConstrainedBody
 	{

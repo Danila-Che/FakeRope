@@ -1,10 +1,10 @@
-using FakeRope.EditModeTests.Utilities;
-using FakeRope.Utilities;
+using Fake.EditModeTests.Utilities;
+using Fake.Utilities;
 using NUnit.Framework;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace FakeRope.EditModeTests
+namespace Fake.EditModeTests
 {
 	[TestFixture]
 	public class FakePoseTests : MonoBehaviour

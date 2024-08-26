@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using Unity.Mathematics;
 
-namespace FakeRope.Utilities
+namespace Fake.Utilities
 {
 	public static partial class Computations
 	{
@@ -17,6 +17,22 @@ namespace FakeRope.Utilities
 
 			float num2 = math.clamp(math.dot(from, to) / num, -1.0f, 1.0f);
 			return math.degrees(math.acos(num2));
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static float3 CalculateCorrection(float3 from, float3 to, float distance)
+		{
+			var direction = to - from;
+			var length = math.length(direction);
+			var error = (length - distance) / length;
+
+			return error * direction;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static float3 CalculateCorrection(float3 from, float3 to)
+		{
+			return to - from;
 		}
 	}
 }

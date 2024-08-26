@@ -1,4 +1,4 @@
-using FakeRope.Utilities;
+using Fake.Utilities;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Unity.Mathematics;
@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.Pool;
 using Plane = Unity.Mathematics.Geometry.Plane;
 
-namespace FakeRope.CollisionDetection
+namespace Fake.CollisionDetection
 {
 	public class FakeCollisionDetectionSystem
 	{

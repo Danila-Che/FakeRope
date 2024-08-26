@@ -1,9 +1,9 @@
-using FakeRope.Utilities;
+using Fake.Utilities;
 using System.Runtime.CompilerServices;
 using Unity.Mathematics;
 using UnityEngine;
 
-namespace FakeRope.CollisionDetection
+namespace Fake.CollisionDetection
 {
 	public readonly struct FakeBoxCollider
 	{
@@ -15,8 +15,8 @@ namespace FakeRope.CollisionDetection
 		private readonly float3 m_HalfSize;
 		private readonly float3[] m_Vertices;
 
-		public FakeBoxCollider(BoxCollider unityBoxCollider, float3 size)
-			: this(size)
+		public FakeBoxCollider(BoxCollider unityBoxCollider)
+			: this(unityBoxCollider.WorldSize())
 		{
 			UnityBoxCollider = unityBoxCollider;
 		}
@@ -38,6 +38,8 @@ namespace FakeRope.CollisionDetection
 			m_Vertices[6] = new float3(m_HalfSize.x, m_HalfSize.y, -m_HalfSize.z);
 			m_Vertices[7] = new float3(m_HalfSize.x, m_HalfSize.y, m_HalfSize.z);
 		}
+
+		public float3 Size => 2f * m_HalfSize;
 
 		public void Update(FakePose pose)
 		{
@@ -68,6 +70,26 @@ namespace FakeRope.CollisionDetection
 			}
 
 			return result;
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static float3 CalculateInverseInertiaTensor(FakeBoxCollider boxCollider, float mass)
+		{
+			var size = boxCollider.Size;
+
+			var inertiaTensor = new float3()
+			{
+				x = (mass / 12.0f) * (size.y * size.y + size.z * size.z),
+				y = (mass / 12.0f) * (size.x * size.x + size.z * size.z),
+				z = (mass / 12.0f) * (size.x * size.x + size.y * size.y),
+			};
+
+			return new float3()
+			{
+				x = 1.0f / inertiaTensor.x,
+				y = 1.0f / inertiaTensor.y,
+				z = 1.0f / inertiaTensor.z,
+			};
 		}
 	}
 }

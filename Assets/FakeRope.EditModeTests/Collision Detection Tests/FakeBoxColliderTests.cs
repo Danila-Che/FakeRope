@@ -1,10 +1,10 @@
-using FakeRope.CollisionDetection;
-using FakeRope.EditModeTests.Utilities;
-using FakeRope.Utilities;
+using Fake.CollisionDetection;
+using Fake.EditModeTests.Utilities;
+using Fake.Utilities;
 using NUnit.Framework;
 using Unity.Mathematics;
 
-namespace FakeRope.EditModeTests
+namespace Fake.EditModeTests
 {
 	[TestFixture]
 	public class FakeBoxColliderTests

@@ -2,7 +2,7 @@ using System;
 using System.Runtime.CompilerServices;
 using Unity.Mathematics;
 
-namespace FakeRope.Utilities
+namespace Fake.Utilities
 {
 	public readonly struct FakePose : IEquatable<FakePose>
 	{
@@ -11,11 +11,16 @@ namespace FakeRope.Utilities
 		public readonly float3 Position;
 		public readonly quaternion Rotation;
 
+		public FakePose(float3 position)
+		{
+			Position = position;
+			Rotation = quaternion.identity;
+		}
+
 		public FakePose(float3 position, quaternion quaternion)
 		{
 			Position = position;
 			Rotation = quaternion;
-
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

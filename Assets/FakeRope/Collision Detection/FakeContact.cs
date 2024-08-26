@@ -1,8 +1,8 @@
-using FakeRope.Utilities;
+using Fake.Utilities;
 using System.Runtime.CompilerServices;
 using Unity.Mathematics;
 
-namespace FakeRope.CollisionDetection
+namespace Fake.CollisionDetection
 {
 	public struct FakeContact
 	{

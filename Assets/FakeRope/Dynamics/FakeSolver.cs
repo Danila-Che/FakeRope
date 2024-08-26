@@ -1,9 +1,8 @@
 using System.Collections.Generic;
-using UnityEngine;
 
-namespace FakeRope.Dynamics
+namespace Fake.Dynamics
 {
-	public class FakeSolver : MonoBehaviour
+	public class FakeSolver
 	{
 		private readonly SolverArgs m_SolverArgs;
 		private readonly List<IDynamicBody> m_DynamicBodies;
@@ -18,7 +17,10 @@ namespace FakeRope.Dynamics
 
 		public void AddBody(IDynamicBody body)
 		{
-			m_DynamicBodies.Add(body);
+			if (m_DynamicBodies.Contains(body) is false)
+			{
+				m_DynamicBodies.Add(body);
+			}
 		}
 
 		public void RemoveBody(IDynamicBody body)
@@ -28,7 +30,10 @@ namespace FakeRope.Dynamics
 
 		public void AddBody(IConstrainedBody body)
 		{
-			m_ConstrainedBodies.Add(body);
+			if (m_ConstrainedBodies.Contains(body) is false)
+			{
+				m_ConstrainedBodies.Add(body);
+			}
 		}
 
 		public void RemoveBody(IConstrainedBody body)
@@ -49,12 +54,7 @@ namespace FakeRope.Dynamics
 
 				// Friction
 
-				for (int i = 0; i < m_DynamicBodies.Count; i++)
-				{
-					m_DynamicBodies[i].ApplyAcceleration(substepDeltaTime, m_SolverArgs.GravitationalAcceleration);
-					m_DynamicBodies[i].ApplyDrag(substepDeltaTime);
-					m_DynamicBodies[i].Step(substepDeltaTime);
-				}
+				SolveDynamics(substepDeltaTime);
 
 				// Solve collision
 
@@ -66,6 +66,16 @@ namespace FakeRope.Dynamics
 				{
 					m_DynamicBodies[i].EndStep(substepDeltaTime);
 				}
+			}
+		}
+
+		private void SolveDynamics(float deltaTime)
+		{
+			for (int i = 0; i < m_DynamicBodies.Count; i++)
+			{
+				m_DynamicBodies[i].ApplyAcceleration(deltaTime, m_SolverArgs.GravitationalAcceleration);
+				m_DynamicBodies[i].ApplyDrag(deltaTime);
+				m_DynamicBodies[i].Step(deltaTime);
 			}
 		}
 

@@ -1,8 +1,8 @@
-using FakeRope.CollisionDetection;
+using Fake.CollisionDetection;
 using NUnit.Framework;
 using Unity.Mathematics;
 
-namespace FakeRope.EditModeTests
+namespace Fake.EditModeTests
 {
 	[TestFixture]
 	public class FakeLineTests
