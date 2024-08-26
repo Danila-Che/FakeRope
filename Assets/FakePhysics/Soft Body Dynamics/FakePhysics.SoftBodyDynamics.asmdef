@@ -1,0 +1,19 @@
+{
+    "name": "FakePhysics.SoftBodyDynamics",
+    "rootNamespace": "FakePhysics.SoftBodyDynamics",
+    "references": [
+        "GUID:3a653aed395e6b848aabf56904d0210d",
+        "GUID:5ed897ca03408cb43a8984b373b33851",
+        "GUID:4de9d41bbba519c468ce0210d1cfc874",
+        "GUID:d8b63aba1907145bea998dd612889d6b"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
