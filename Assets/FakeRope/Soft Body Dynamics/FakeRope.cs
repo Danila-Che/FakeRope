@@ -10,18 +10,17 @@ namespace Fake.SoftBodyDynamics
 	public class FakeRope : IDynamicBody, IConstrainedBody
 	{
 		private readonly FakeJoint m_FakeJoint;
-		private readonly float m_SpanDistance;
-		private readonly float3 m_Drag;
+		private readonly RopeArgs m_RopeArgs;
+
 		private readonly List<FakeParticle> m_Particles;
 		private readonly List<FakeDistanceConstraint> m_DistanceConstraints;
 
 		private bool m_IsDisposed;
 
-		public FakeRope(FakeJoint fakeJoint, float spanDistance, float3 drag)
+		public FakeRope(FakeJoint fakeJoint, RopeArgs ropeArgs)
 		{
 			m_FakeJoint = fakeJoint;
-			m_SpanDistance = spanDistance;
-			m_Drag = drag;
+			m_RopeArgs = ropeArgs;
 
 			m_Particles = new List<FakeParticle>();
 			m_DistanceConstraints = new List<FakeDistanceConstraint>();
@@ -131,7 +130,7 @@ namespace Fake.SoftBodyDynamics
 			{
 				var particle = m_Particles[i];
 
-				var drag = particle.Velocity * m_Drag;
+				var drag = particle.Velocity * m_RopeArgs.Drag;
 				particle.Velocity -= particle.InverseMass * deltaTime * drag;
 
 				m_Particles[i] = particle;
@@ -162,16 +161,17 @@ namespace Fake.SoftBodyDynamics
 			var vector = sourcePosition - targetPosition;
 			var normal = math.normalize(vector);
 			var magnitude = math.length(vector);
-			var particleCount = 1 + (int)math.ceil(magnitude / m_SpanDistance);
+			var particleCount = 1 + (int)math.ceil(magnitude / m_RopeArgs.SpanDistance);
+			var mass = m_RopeArgs.Mass;
 
 			m_Particles.Capacity = particleCount;
 
 			for (int i = 0; i < particleCount; i++)
 			{
-				m_Particles.Add(new FakeParticle(targetPosition + m_SpanDistance * i * normal, mass: 1.0f));
+				m_Particles.Add(new FakeParticle(targetPosition + m_RopeArgs.SpanDistance * i * normal, mass));
 			}
 
-			m_Particles.Add(new FakeParticle(sourcePosition, mass: 1.0f));
+			m_Particles.Add(new FakeParticle(sourcePosition, mass));
 		}
 
 		private void CreateConstraints()

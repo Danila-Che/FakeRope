@@ -225,8 +225,11 @@ MonoBehaviour:
     x: -0.5
     y: 0.5
     z: 0
-  m_SpanDistance: 1
-  m_Drag: 0
+  m_RopeArgs:
+    m_SpanDistance: 0.25
+    m_Drag: 0
+    m_Density: 7800
+    m_Radius: 0.005
 --- !u!1 &328602800
 GameObject:
   m_ObjectHideFlags: 0
@@ -300,8 +303,11 @@ MonoBehaviour:
     x: -0.5
     y: 0.5
     z: 0
-  m_SpanDistance: 1
-  m_Drag: 0
+  m_RopeArgs:
+    m_SpanDistance: 0.25
+    m_Drag: 0
+    m_Density: 7800
+    m_Radius: 0.005
 --- !u!1 &339619507
 GameObject:
   m_ObjectHideFlags: 0
@@ -790,8 +796,11 @@ MonoBehaviour:
     x: 0.5
     y: 0.5
     z: 0
-  m_SpanDistance: 1
-  m_Drag: 0
+  m_RopeArgs:
+    m_SpanDistance: 0.25
+    m_Drag: 0
+    m_Density: 7800
+    m_Radius: 0.005
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -939,8 +948,11 @@ MonoBehaviour:
     x: 0.5
     y: 0.5
     z: 0
-  m_SpanDistance: 1
-  m_Drag: 0
+  m_RopeArgs:
+    m_SpanDistance: 0.25
+    m_Drag: 0
+    m_Density: 7800
+    m_Radius: 0.005
 --- !u!114 &1411357176
 MonoBehaviour:
   m_ObjectHideFlags: 0

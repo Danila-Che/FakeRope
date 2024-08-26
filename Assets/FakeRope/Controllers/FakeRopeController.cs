@@ -14,14 +14,13 @@ namespace Fake.Controllers
 		[Header("First Body")]
 		[SerializeField] private FakeRigidBodyController m_AnchorBody;
 		[SerializeField] private float3 m_AnchorLocalAttachement;
+
 		[Header("Second Body")]
 		[SerializeField] private FakeRigidBodyController m_TargetBody;
 		[SerializeField] private float3 m_TargetLocalAttachement;
 
-		[Min(0.01f)]
-		[SerializeField] private float m_SpanDistance = 1.0f;
-		[Min(0.0f)]
-		[SerializeField] private float m_Drag = 0.0f;
+		[Header("Settings")]
+		[SerializeField] private RopeArgs m_RopeArgs;
 
 		private FakeRope m_Rope;
 		private IRenderer m_Renderer;
@@ -32,7 +31,7 @@ namespace Fake.Controllers
 		{
 			m_FakeSolverController = GetComponentInParent<FakeSolverController>();
 
-			m_Rope = new FakeRope(CreateJoint(), m_SpanDistance, m_Drag);
+			m_Rope = new FakeRope(CreateJoint(), m_RopeArgs);
 			m_Rope.CreateFromJoint();
 
 			m_Renderer = GetComponent<IRenderer>();
