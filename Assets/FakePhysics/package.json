@@ -7,5 +7,11 @@
     "keywords": ["Rope", "Cabel", "Chain", "PBD", "XPBD", "Dynamics"],
     "license": "MIT",
     "documentationUrl": "https://github.com/Danila-Che/FakeRope",
-    "licensesUrl": "https://github.com/Danila-Che/FakeRope?tab=MIT-1-ov-file"
+    "licensesUrl": "https://github.com/Danila-Che/FakeRope?tab=MIT-1-ov-file",
+    "dependencies": {
+        "com.unity.mathematics": "1.3.2"
+    },
+    "author": {
+        "name": "Danila"
+    }
 }
