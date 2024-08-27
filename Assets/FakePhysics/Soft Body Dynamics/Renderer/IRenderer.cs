@@ -5,7 +5,7 @@ namespace FakePhysics.SoftBodyDynamics.Renderer
 {
 	public interface IRenderer
 	{
-		public void Init();
+		public void Init(RopeArgs ropeArgs);
 
 		public void Draw(NativeArray<FakeParticle>.ReadOnly particles);
 

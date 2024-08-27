@@ -20,7 +20,7 @@ namespace FakePhysics.SoftBodyDynamics.Renderer
 		private Vector3 m_Error;
 		private int m_ParityBit;
 
-		public void Init()
+		public void Init(RopeArgs ropeArgs)
 		{
 			m_RenderParams = new RenderParams(m_Material)
 			{

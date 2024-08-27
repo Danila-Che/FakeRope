@@ -37,7 +37,7 @@ namespace FakePhysics.Controllers
 			m_Rope.CreateFromJoint();
 
 			m_Renderer = GetComponent<IRenderer>();
-			m_Renderer.Init();
+			m_Renderer.Init(m_RopeArgs);
 
 			m_RopeModifiers = GetComponentsInParent<IRopeModifier>();
 
