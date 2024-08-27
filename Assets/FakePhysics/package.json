@@ -1,0 +1,11 @@
+{
+    "name": "com.danilache.fakerope",
+    "displayName": "Fake Rope (XPBD)",
+    "version": "0.1.0",
+    "unity": "2019.1",
+    "description": "PBD rope for Unity with XPBD dynamics",
+    "keywords": ["Rope", "Cabel", "Chain", "PBD", "XPBD", "Dynamics"],
+    "license": "MIT",
+    "documentationUrl": "https://github.com/Danila-Che/FakeRope",
+    "licensesUrl": "https://github.com/Danila-Che/FakeRope?tab=MIT-1-ov-file"
+}
