@@ -5,7 +5,7 @@ using UnityEngine;
 namespace FakePhysics.SoftBodyDynamics.Renderer
 {
 	[RequireComponent(typeof(LineRenderer))]
-	public class LineRopeRenderer : MonoBehaviour, IRenderer
+	internal class LineRopeRenderer : MonoBehaviour, IRenderer
 	{
 		private LineRenderer m_LineRenderer;
 		private RopeArgs m_RopeArgs;
