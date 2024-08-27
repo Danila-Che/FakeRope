@@ -53,7 +53,7 @@ namespace FakePhysics.Dynamics
 
 		public void Remove(IDynamicBody body)
 		{
-			m_DynamicBodies.Add(body);
+			m_DynamicBodies.Remove(body);
 		}
 
 		public void Remove(ICollidingBody body)
@@ -63,7 +63,7 @@ namespace FakePhysics.Dynamics
 
 		public void Remove(IConstrainedBody body)
 		{
-			m_ConstrainedBodies.Add(body);
+			m_ConstrainedBodies.Remove(body);
 		}
 
 		public void Step(float deltaTime)

@@ -2,6 +2,7 @@ using FakePhysics.RigidBodyDynamics;
 using FakePhysics.SoftBodyDynamics;
 using FakePhysics.SoftBodyDynamics.Renderer;
 using FakePhysics.Utilities;
+using System;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -24,6 +25,7 @@ namespace FakePhysics.Controllers
 
 		private FakeRope m_Rope;
 		private IRenderer m_Renderer;
+		private IRopeModifier[] m_RopeModifiers;
 
 		private FakeSolverController m_FakeSolverController;
 
@@ -37,9 +39,13 @@ namespace FakePhysics.Controllers
 			m_Renderer = GetComponent<IRenderer>();
 			m_Renderer.Init();
 
+			m_RopeModifiers = GetComponentsInParent<IRopeModifier>();
+
 			if (m_FakeSolverController != null)
 			{
 				m_FakeSolverController.RegisterSolfBody(m_Rope);
+
+				m_FakeSolverController.BeforeStep += OnStepBegin;
 			}
 		}
 
@@ -48,6 +54,8 @@ namespace FakePhysics.Controllers
 			if (m_FakeSolverController != null)
 			{
 				m_FakeSolverController.UnregisterSolfBody(m_Rope);
+
+				m_FakeSolverController.BeforeStep -= OnStepBegin;
 			}
 		}
 
@@ -83,6 +91,11 @@ namespace FakePhysics.Controllers
 				m_TargetBody.Body,
 				new FakePose(m_AnchorLocalAttachement, quaternion.identity),
 				new FakePose(m_TargetLocalAttachement, quaternion.identity));
+		}
+
+		private void OnStepBegin()
+		{
+			Array.ForEach(m_RopeModifiers, modifier => modifier.Modify(m_Rope, Time.fixedDeltaTime));
 		}
 	}
 }

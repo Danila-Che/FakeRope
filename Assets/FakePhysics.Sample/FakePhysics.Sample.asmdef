@@ -1,7 +1,9 @@
 {
-    "name": "FakeRope.Sample",
-    "rootNamespace": "FakeRope.Sample",
-    "references": [],
+    "name": "FakePhysics.Sample",
+    "rootNamespace": "FakePhysics.Sample",
+    "references": [
+        "GUID:a9c4dbf365ef8224aa044f6b88bbcaf1"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

@@ -7,7 +7,7 @@ using Unity.Mathematics;
 
 namespace FakePhysics.SoftBodyDynamics
 {
-	public class FakeRope : IDynamicBody, IConstrainedBody
+	public class FakeRope : IDisposable, IDynamicBody, IConstrainedBody
 	{
 		private readonly FakeJoint m_FakeJoint;
 		private readonly RopeArgs m_RopeArgs;
@@ -137,8 +137,42 @@ namespace FakePhysics.SoftBodyDynamics
 			}
 		}
 
+		public void ChangeLength(float lengthDelta)
+		{
+			CheckDisposed();
+
+			var constraint = m_DistanceConstraints[^1];
+			var distance = constraint.Distance + lengthDelta;
+
+			if (distance <= 0f && m_DistanceConstraints.Count > 1)
+			{
+				RemoveParticle();
+
+				constraint = m_DistanceConstraints[^1];
+				constraint.Distance = m_RopeArgs.SpanDistance - distance;
+				m_DistanceConstraints[^1] = constraint;
+			}
+			else if (distance > m_RopeArgs.SpanDistance)
+			{
+				var remainder = distance - m_RopeArgs.SpanDistance;
+				constraint.Distance = m_RopeArgs.SpanDistance;
+
+				m_DistanceConstraints[^1] = constraint;
+
+				AddParticle(remainder);
+			}
+			else
+			{
+				constraint.Distance = math.clamp(distance, 0f, m_RopeArgs.SpanDistance);
+
+				m_DistanceConstraints[^1] = constraint;
+			}
+		}
+
 		public void CreateFromJoint()
 		{
+			CheckDisposed();
+
 			if (m_FakeJoint == null)
 			{
 				throw new ArgumentNullException(nameof(m_FakeJoint));
@@ -152,8 +186,18 @@ namespace FakePhysics.SoftBodyDynamics
 
 		public void Create(float3 sourcePosition, float3 targetPosition)
 		{
+			CheckDisposed();
+
 			CreateParticles(sourcePosition, targetPosition);
 			CreateConstraints();
+		}
+
+		private void CheckDisposed()
+		{
+			if (m_IsDisposed)
+			{
+				throw new ObjectDisposedException(GetType().Name);
+			}
 		}
 
 		private void CreateParticles(float3 sourcePosition, float3 targetPosition)
@@ -161,7 +205,7 @@ namespace FakePhysics.SoftBodyDynamics
 			var vector = sourcePosition - targetPosition;
 			var normal = math.normalize(vector);
 			var magnitude = math.length(vector);
-			var particleCount = 1 + (int)math.floor(magnitude / m_RopeArgs.SpanDistance);
+			var particleCount = (int)math.ceil(magnitude / m_RopeArgs.SpanDistance);
 			var mass = m_RopeArgs.Mass;
 
 			m_Particles.Capacity = particleCount;
@@ -186,12 +230,19 @@ namespace FakePhysics.SoftBodyDynamics
 			}
 		}
 
-		private void CheckDisposed()
+		private void AddParticle(float distance)
 		{
-			if (m_IsDisposed)
-			{
-				throw new ObjectDisposedException(GetType().Name);
-			}
+			var i = m_Particles.Count - 1;
+			var particle = m_Particles[i];
+
+			m_Particles.Add(particle);
+			m_DistanceConstraints.Add(new FakeDistanceConstraint(i, i + 1, distance));
+		}
+
+		private void RemoveParticle()
+		{
+			m_DistanceConstraints.RemoveLastElement();
+			m_Particles.RemoveLastElement();
 		}
 
 		private void SolveInnerConstraints()
@@ -206,7 +257,7 @@ namespace FakePhysics.SoftBodyDynamics
 				var direction = particle1.Position - particle0.Position;
 				var length = math.length(direction);
 
-				if (length > 0.0f)
+				if (length > 0f)
 				{
 					var error = (length - constraint.Distance) / length;
 
@@ -235,12 +286,12 @@ namespace FakePhysics.SoftBodyDynamics
 					body,
 					null,
 					correction,
-					0.0f,
+					0f,
 					deltaTime,
 					globalPosition,
 					particle.Position);
 
-				var bodyInverseMass = body.IsKinematic ? 0.0f : body.GetInverseMass(math.normalize(correction), globalPosition);
+				var bodyInverseMass = body.IsKinematic ? 0f : body.GetInverseMass(math.normalize(correction), globalPosition);
 
 				var w = bodyInverseMass + particle.InverseMass;
 				var k = particle.InverseMass / w;

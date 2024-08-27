@@ -19,6 +19,7 @@ namespace FakePhysics.Controllers
 	internal class FakeSolverController : MonoBehaviour
 	{
 		public event Action BeforeStep;
+		public event Action AfterStep;
 
 		[SerializeField] private SolverArgs m_SolverArgs;
 
@@ -34,6 +35,8 @@ namespace FakePhysics.Controllers
 			BeforeStep?.Invoke();
 
 			m_Solver.Step(Time.fixedDeltaTime);
+
+			AfterStep?.Invoke();
 		}
 
 		public void RegisterRigidBody(FakeRigidBody body)

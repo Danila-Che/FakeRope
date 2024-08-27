@@ -4,6 +4,9 @@
     "references": [
         "FakePhysics",
         "FakePhysics.CollisionDetection",
+        "FakePhysics.Dynamics",
+        "FakePhysics.RigidBodyDynamics",
+        "FakePhysics.SoftBodyDynamics",
         "FakePhysics.Utilities",
         "Unity.Mathematics",
         "UnityEngine.TestRunner",

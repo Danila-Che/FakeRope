@@ -35,5 +35,10 @@ namespace FakePhysics.Utilities
 
 			return result / count;
 		}
+
+		public static void RemoveLastElement<T>(this List<T> list)
+		{
+			list.RemoveAt(list.Count - 1);
+		}
 	}
 }

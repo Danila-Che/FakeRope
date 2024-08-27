@@ -1,3 +1,5 @@
+using FakePhysics.Utilities;
+
 namespace FakePhysics.SoftBodyDynamics
 {
 	public struct FakeDistanceConstraint
@@ -11,6 +13,11 @@ namespace FakePhysics.SoftBodyDynamics
 			Index0 = index0;
 			Index1 = index1;
 			Distance = distance;
+		}
+
+		public override readonly string ToString()
+		{
+			return CommonUtilities.ToNumberFormat("FakeDistanceConstraint({0}, {1}) distance {2}", Index0, Index1, Distance);
 		}
 	}
 }
