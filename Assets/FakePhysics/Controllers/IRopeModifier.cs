@@ -2,7 +2,7 @@ using FakePhysics.SoftBodyDynamics;
 
 namespace FakePhysics.Controllers
 {
-	internal interface IRopeModifier
+	public interface IRopeModifier
 	{
 		void Modify(FakeRope rope, float deltaTime);
 	}
