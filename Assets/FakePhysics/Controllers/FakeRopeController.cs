@@ -21,7 +21,7 @@ namespace FakePhysics.Controllers
 		[SerializeField] private float3 m_TargetLocalAttachement;
 
 		[Header("Settings")]
-		[SerializeField] private RopeArgs m_RopeArgs;
+		[SerializeField] private RopeSettings m_RopeSettings;
 
 		private FakeRope m_Rope;
 		private IRenderer m_Renderer;
@@ -33,11 +33,11 @@ namespace FakePhysics.Controllers
 		{
 			m_FakeSolverController = GetComponentInParent<FakeSolverController>();
 
-			m_Rope = new FakeRope(CreateJoint(), m_RopeArgs);
+			m_Rope = new FakeRope(CreateJoint(), m_RopeSettings.Args);
 			m_Rope.CreateFromJoint();
 
 			m_Renderer = GetComponent<IRenderer>();
-			m_Renderer.Init(m_RopeArgs);
+			m_Renderer.Init(m_RopeSettings.Args);
 
 			m_RopeModifiers = GetComponentsInParent<IRopeModifier>();
 

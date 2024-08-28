@@ -497,11 +497,7 @@ MonoBehaviour:
     x: -0.5
     y: 0.5
     z: -0.3
-  m_RopeArgs:
-    m_SpanDistance: 2
-    m_Drag: 0
-    m_Density: 7800
-    m_Radius: 0.005
+  m_RopeSettings: {fileID: 11400000, guid: c0c99c309206603448c6a268af8aeee4, type: 2}
 --- !u!120 &292494355
 LineRenderer:
   serializedVersion: 2
@@ -693,11 +689,7 @@ MonoBehaviour:
     x: -0.5
     y: 0.5
     z: 0
-  m_RopeArgs:
-    m_SpanDistance: 0.25
-    m_Drag: 0
-    m_Density: 7800
-    m_Radius: 0.005
+  m_RopeSettings: {fileID: 11400000, guid: c0c99c309206603448c6a268af8aeee4, type: 2}
 --- !u!1 &622455281
 GameObject:
   m_ObjectHideFlags: 0
@@ -981,11 +973,7 @@ MonoBehaviour:
     x: 0.5
     y: 0.5
     z: 0.3
-  m_RopeArgs:
-    m_SpanDistance: 2
-    m_Drag: 0
-    m_Density: 7800
-    m_Radius: 0.005
+  m_RopeSettings: {fileID: 11400000, guid: c0c99c309206603448c6a268af8aeee4, type: 2}
 --- !u!120 &1040350528
 LineRenderer:
   serializedVersion: 2
@@ -1209,11 +1197,7 @@ MonoBehaviour:
     x: 0.5
     y: 0.5
     z: -0.3
-  m_RopeArgs:
-    m_SpanDistance: 2
-    m_Drag: 0
-    m_Density: 7800
-    m_Radius: 0.005
+  m_RopeSettings: {fileID: 11400000, guid: c0c99c309206603448c6a268af8aeee4, type: 2}
 --- !u!120 &1347280832
 LineRenderer:
   serializedVersion: 2
@@ -1451,11 +1435,7 @@ MonoBehaviour:
     x: 0.5
     y: 0.5
     z: 0
-  m_RopeArgs:
-    m_SpanDistance: 0.25
-    m_Drag: 0
-    m_Density: 7800
-    m_Radius: 0.005
+  m_RopeSettings: {fileID: 11400000, guid: c0c99c309206603448c6a268af8aeee4, type: 2}
 --- !u!1 &1574140454
 GameObject:
   m_ObjectHideFlags: 0
@@ -1512,11 +1492,7 @@ MonoBehaviour:
     x: -0.5
     y: 0.5
     z: 0.3
-  m_RopeArgs:
-    m_SpanDistance: 2
-    m_Drag: 0
-    m_Density: 7800
-    m_Radius: 0.005
+  m_RopeSettings: {fileID: 11400000, guid: c0c99c309206603448c6a268af8aeee4, type: 2}
 --- !u!120 &1574140458
 LineRenderer:
   serializedVersion: 2
