@@ -23,6 +23,11 @@ namespace FakePhysics.Utilities
 			return new FakePose(rigidbody.position, rigidbody.rotation);
 		}
 
+		public static FakePose ToPose(this Transform transform)
+		{
+			return new FakePose(transform.position, transform.rotation);
+		}
+
 		public static float3 GetOrigin(this IEnumerable<float3> points)
 		{
 			var result = float3.zero;
@@ -39,7 +44,10 @@ namespace FakePhysics.Utilities
 
 		public static void RemoveLastElement<T>(this List<T> list)
 		{
-			list.RemoveAt(list.Count - 1);
+			if (list.Count > 0)
+			{
+				list.RemoveAt(list.Count - 1);
+			}
 		}
 
 		public static void RemoveLastElement<T>(this NativeList<T> list)

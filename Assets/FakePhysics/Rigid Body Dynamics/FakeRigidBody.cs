@@ -1,7 +1,6 @@
 using FakePhysics.CollisionDetection;
 using FakePhysics.Dynamics;
 using FakePhysics.Utilities;
-using System.Runtime.CompilerServices;
 using Unity.Mathematics;
 
 namespace FakePhysics.RigidBodyDynamics
@@ -24,29 +23,37 @@ namespace FakePhysics.RigidBodyDynamics
 		private readonly float3 m_InverseInertiaTensor;
 
 		public FakeRigidBody(UnityEngine.Rigidbody rigidbody, FakeBoxCollider boxCollider)
-			: this(rigidbody.mass, boxCollider)
+			: this(rigidbody.ToPose(), boxCollider)
 		{
-			m_Pose = new FakePose(rigidbody.position, rigidbody.rotation);
-			m_PreviousPose = m_Pose;
-
 			m_IsKinematic = rigidbody.isKinematic;
 			m_Drag = rigidbody.drag;
 
-			m_Velocity = float3.zero;
-			m_AngularVelocity = float3.zero;
-		}
-
-		private FakeRigidBody(float mass, FakeBoxCollider boxCollider)
-		{
 			m_BoxCollider = boxCollider;
 
-			m_InverseMass = math.isfinite(mass) switch
+			m_InverseMass = math.isfinite(rigidbody.mass) switch
 			{
-				true => 1.0f / mass,
+				true => 1.0f / rigidbody.mass,
 				false => 0.0f,
 			};
 
-			m_InverseInertiaTensor = CollisionComputations.CalculateInverseInertiaTensor(boxCollider, mass);
+			m_InverseInertiaTensor = CollisionComputations.CalculateInverseInertiaTensor(boxCollider, rigidbody.mass);
+		}
+
+		public FakeRigidBody(FakePose pose, FakeBoxCollider boxCollider)
+		{
+			m_Pose = pose;
+			m_PreviousPose = m_Pose;
+
+			m_IsKinematic = true;
+			m_Drag = 0f;
+
+			m_Velocity = float3.zero;
+			m_AngularVelocity = float3.zero;
+
+			m_BoxCollider = boxCollider;
+
+			m_InverseMass = 0.0f;
+			m_InverseInertiaTensor = m_InverseInertiaTensor = CollisionComputations.CalculateInverseInertiaTensor(boxCollider, math.INFINITY);
 		}
 
 		public bool IsKinematic => m_IsKinematic;
