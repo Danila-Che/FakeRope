@@ -9,7 +9,9 @@
     "documentationUrl": "https://github.com/Danila-Che/FakeRope",
     "licensesUrl": "https://github.com/Danila-Che/FakeRope?tab=MIT-1-ov-file",
     "dependencies": {
-        "com.unity.mathematics": "1.3.2"
+        "com.unity.mathematics": "1.3.2",
+        "com.unity.burst": "1.8.17",
+        "com.unity.collections": "1.2.4"
     },
     "author": {
         "name": "Danila"

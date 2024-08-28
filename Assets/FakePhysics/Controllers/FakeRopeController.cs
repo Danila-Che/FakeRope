@@ -57,6 +57,20 @@ namespace FakePhysics.Controllers
 
 				m_FakeSolverController.BeforeStep -= OnStepBegin;
 			}
+
+			m_Rope?.Dispose();
+		}
+
+		private void OnDestroy()
+		{
+			if (m_FakeSolverController != null)
+			{
+				m_FakeSolverController.UnregisterSolfBody(m_Rope);
+
+				m_FakeSolverController.BeforeStep -= OnStepBegin;
+			}
+
+			m_Rope?.Dispose();
 		}
 
 		private void Update()
@@ -79,7 +93,15 @@ namespace FakePhysics.Controllers
 			Gizmos.DrawSphere(joint.AnchorGlobalPose.Position, 0.1f);
 			Gizmos.DrawSphere(joint.TargetGlobalPose.Position, 0.1f);
 
-			m_Rope?.Particles.ForEach(particle => Gizmos.DrawSphere(particle.Position, 0.05f));
+			if (m_Rope != null)
+			{
+				var particles = m_Rope.Particles;
+
+				for (int i = 0; i < particles.Length; i++)
+				{
+					Gizmos.DrawSphere(particles[i].Position, 0.05f);
+				}
+			}
 		}
 
 #endif

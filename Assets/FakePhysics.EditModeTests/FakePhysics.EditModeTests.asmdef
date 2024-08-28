@@ -8,6 +8,7 @@
         "FakePhysics.RigidBodyDynamics",
         "FakePhysics.SoftBodyDynamics",
         "FakePhysics.Utilities",
+        "Unity.Collections",
         "Unity.Mathematics",
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner"

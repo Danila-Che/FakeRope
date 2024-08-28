@@ -25,7 +25,7 @@ namespace FakePhysics.EditModeTests
 
 			rope.Create(sourcePosition, targetPosition);
 
-			Assert.That(rope.Particles.Count, Is.EqualTo(4));
+			Assert.That(rope.Particles.Length, Is.EqualTo(4));
 			Assert.That(rope.Particles[0].Position, Is.EqualTo(targetPosition).Using(m_Float3Comparer));
 			Assert.That(rope.Particles[1].Position, Is.EqualTo(new float3(0f, 2f, 0f)).Using(m_Float3Comparer));
 			Assert.That(rope.Particles[2].Position, Is.EqualTo(new float3(0f, 4f, 0f)).Using(m_Float3Comparer));
@@ -41,7 +41,7 @@ namespace FakePhysics.EditModeTests
 
 			rope.Create(sourcePosition, targetPosition);
 
-			Assert.That(rope.Particles.Count, Is.EqualTo(3));
+			Assert.That(rope.Particles.Length, Is.EqualTo(3));
 			Assert.That(rope.Particles[0].Position, Is.EqualTo(targetPosition).Using(m_Float3Comparer));
 			Assert.That(rope.Particles[1].Position, Is.EqualTo(new float3(0f, 2f, 0f)).Using(m_Float3Comparer));
 			Assert.That(rope.Particles[2].Position, Is.EqualTo(sourcePosition).Using(m_Float3Comparer));

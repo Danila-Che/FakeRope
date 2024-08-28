@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Globalization;
+using Unity.Collections;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -39,6 +40,15 @@ namespace FakePhysics.Utilities
 		public static void RemoveLastElement<T>(this List<T> list)
 		{
 			list.RemoveAt(list.Count - 1);
+		}
+
+		public static void RemoveLastElement<T>(this NativeList<T> list)
+			where T : unmanaged
+		{
+			if (list.Length > 0)
+			{
+				list.RemoveAt(list.Length - 1);
+			}
 		}
 	}
 }
