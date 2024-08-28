@@ -7,10 +7,14 @@ namespace FakePhysics.SoftBodyDynamics.Renderer
 	[RequireComponent(typeof(LineRenderer))]
 	internal class LineRopeRenderer : MonoBehaviour, IRenderer
 	{
+		[SerializeField] private bool m_UseCustomWidth;
+		[Min(0f)]
+		[SerializeField] private float m_CustomWidth = 0.1f;
+
 		private LineRenderer m_LineRenderer;
 		private RopeArgs m_RopeArgs;
 
-		private float RopeWidth => 2f * m_RopeArgs.Radius;
+		private float RopeWidth => m_UseCustomWidth ? m_CustomWidth : 2f * m_RopeArgs.Radius;
 
 		public void Init(RopeArgs ropeArgs)
 		{
