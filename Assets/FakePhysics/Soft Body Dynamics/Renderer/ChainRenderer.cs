@@ -86,9 +86,13 @@ namespace FakePhysics.SoftBodyDynamics.Renderer
 			var vector = to - from;
 			var normal = vector.normalized;
 			var length = vector.magnitude;
+
+			if (float.IsNaN(length) || length < Mathf.Epsilon) { return; }
+
 			var count = (int)(Mathf.Ceil(length / m_Offset));
 
 			var trs = Matrix4x4.identity;
+
 			var lookRotation = Quaternion.LookRotation(normal) * Quaternion.Euler(m_Rotation);
 			var crossRotation = lookRotation * Quaternion.Euler(0.0f, 0.0f, 90.0f);
 

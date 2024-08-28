@@ -171,7 +171,7 @@ namespace FakePhysics.CollisionDetection
 						jtSecondP = 0;
 					}
 
-					bool notParallel = CollisionComputations.TryGetLineIntersection(
+					bool notParallel = Computations.TryGetLineIntersection(
 						new FakeLine(contactPointsB[it].Point, contactPointsB[itSecondP].Point),
 						new FakeLine(contactPointsA[jt].Point, contactPointsA[jtSecondP].Point),
 						out float3 projectPoint);

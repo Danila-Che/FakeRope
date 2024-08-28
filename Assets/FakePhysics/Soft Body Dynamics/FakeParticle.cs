@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using Unity.Mathematics;
 
 namespace FakePhysics.SoftBodyDynamics
@@ -9,6 +10,7 @@ namespace FakePhysics.SoftBodyDynamics
 		public float3 Velocity;
 		public float InverseMass;
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public FakeParticle(float3 position, float mass)
 		{
 			PreviousPosition = position;

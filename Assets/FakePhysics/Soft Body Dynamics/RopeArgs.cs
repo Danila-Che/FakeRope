@@ -15,6 +15,8 @@ namespace FakePhysics.SoftBodyDynamics
 		[SerializeField] private float m_Density = 7800f;
 		[Min(0.0f)]
 		[SerializeField] private float m_Radius = 0.1f;
+		[Range(0f, 1f)]
+		[SerializeField] private float m_Stiffness = 0f;
 
 		public RopeArgs(float spanDistance = 1f, float drag = 0f, float density = 7800, float radius = 0.1f)
 		{
@@ -32,6 +34,10 @@ namespace FakePhysics.SoftBodyDynamics
 
 		public float Radius => m_Radius;
 
-		public float Mass => m_Density * math.PI * m_Radius * m_Radius * m_SpanDistance;
+		public float Stiffness => m_Stiffness;
+
+		public float Mass => m_Density * Volume;
+
+		public float Volume => math.PI * m_Radius * m_Radius * m_SpanDistance;
 	}
 }

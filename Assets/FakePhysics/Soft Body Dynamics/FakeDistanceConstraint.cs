@@ -17,7 +17,7 @@ namespace FakePhysics.SoftBodyDynamics
 
 		public override readonly string ToString()
 		{
-			return CommonUtilities.ToNumberFormat("FakeDistanceConstraint({0}, {1}) distance {2}", Index0, Index1, Distance);
+			return CommonUtilities.ToNumberFormat("DistanceConstraint({0}, {1}) distance {2}", Index0, Index1, Distance);
 		}
 	}
 }

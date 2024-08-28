@@ -14,6 +14,7 @@ namespace FakePhysics.SoftBodyDynamics
 
 		private readonly List<FakeParticle> m_Particles;
 		private readonly List<FakeDistanceConstraint> m_DistanceConstraints;
+		private readonly List<FakeBendConstraint> m_BendConstraints;
 
 		private bool m_IsDisposed;
 
@@ -24,6 +25,7 @@ namespace FakePhysics.SoftBodyDynamics
 
 			m_Particles = new List<FakeParticle>();
 			m_DistanceConstraints = new List<FakeDistanceConstraint>();
+			m_BendConstraints = new List<FakeBendConstraint>();
 
 			m_IsDisposed = false;
 		}
@@ -86,13 +88,16 @@ namespace FakePhysics.SoftBodyDynamics
 
 			if (m_FakeJoint == null)
 			{
+				SolveBendConstraint();
 				SolveInnerConstraints();
 			}
 			else
 			{
 				m_FakeJoint.RecalculateGlobalPoses();
 
-				SolverOuterConstraint(
+				SolveBendConstraint();
+
+				SolveOuterConstraint(
 					particleIndex: 0,
 					m_FakeJoint.TargetBody,
 					m_FakeJoint.TargetGlobalPose.Position,
@@ -100,7 +105,7 @@ namespace FakePhysics.SoftBodyDynamics
 
 				SolveInnerConstraints();
 
-				SolverOuterConstraint(
+				SolveOuterConstraint(
 					m_Particles.Count - 1,
 					m_FakeJoint.AnchorBody,
 					m_FakeJoint.AnchorGlobalPose.Position,
@@ -181,7 +186,8 @@ namespace FakePhysics.SoftBodyDynamics
 			m_FakeJoint.RecalculateGlobalPoses();
 
 			CreateParticles(m_FakeJoint.AnchorGlobalPose.Position, m_FakeJoint.TargetGlobalPose.Position);
-			CreateConstraints();
+			CreateDistanceConstraints();
+			CreateBendConstraints();
 		}
 
 		public void Create(float3 sourcePosition, float3 targetPosition)
@@ -189,7 +195,8 @@ namespace FakePhysics.SoftBodyDynamics
 			CheckDisposed();
 
 			CreateParticles(sourcePosition, targetPosition);
-			CreateConstraints();
+			CreateDistanceConstraints();
+			CreateBendConstraints();
 		}
 
 		private void CheckDisposed()
@@ -218,7 +225,7 @@ namespace FakePhysics.SoftBodyDynamics
 			m_Particles.Add(new FakeParticle(sourcePosition, mass));
 		}
 
-		private void CreateConstraints()
+		private void CreateDistanceConstraints()
 		{
 			m_DistanceConstraints.Capacity = m_Particles.Count - 1;
 
@@ -227,6 +234,16 @@ namespace FakePhysics.SoftBodyDynamics
 				var distance = math.distance(m_Particles[i].Position, m_Particles[i + 1].Position);
 
 				m_DistanceConstraints.Add(new FakeDistanceConstraint(i, i + 1, distance));
+			}
+		}
+
+		private void CreateBendConstraints()
+		{
+			m_BendConstraints.Capacity = m_Particles.Count - 2;
+
+			for (int i = 0; i < m_Particles.Count - 2; i++)
+			{
+				m_BendConstraints.Add(new FakeBendConstraint(i, i + 1, i + 2, 0f));
 			}
 		}
 
@@ -275,7 +292,7 @@ namespace FakePhysics.SoftBodyDynamics
 			}
 		}
 
-		private void SolverOuterConstraint(int particleIndex, FakeRigidBody body, float3 globalPosition, float deltaTime)
+		private void SolveOuterConstraint(int particleIndex, FakeRigidBody body, float3 globalPosition, float deltaTime)
 		{
 			var particle = m_Particles[particleIndex];
 			var correction = Computations.CalculateCorrection(globalPosition, particle.Position);
@@ -299,6 +316,27 @@ namespace FakePhysics.SoftBodyDynamics
 				particle.Position -= k * correction;
 
 				m_Particles[particleIndex] = particle;
+			}
+		}
+
+		private void SolveBendConstraint()
+		{
+			for (int i = 0; i < m_BendConstraints.Count; i++)
+			{
+				var constraint = m_BendConstraints[i];
+
+				var particle0 = m_Particles[constraint.Index0];
+				var particle1 = m_Particles[constraint.Index1];
+				var particle2 = m_Particles[constraint.Index2];
+
+				var line0 = new FakeLine(particle0.Position, particle1.Position);
+				var line1 = new FakeLine(particle0.Position, particle2.Position);
+
+				var correction = Computations.Rotate(line0, line1, m_RopeArgs.Stiffness);
+
+				particle1.Position = particle0.Position + correction;
+
+				m_Particles[constraint.Index1] = particle1;
 			}
 		}
 	}

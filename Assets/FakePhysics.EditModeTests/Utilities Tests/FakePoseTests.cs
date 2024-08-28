@@ -7,7 +7,7 @@ using UnityEngine;
 namespace FakePhysics.EditModeTests
 {
 	[TestFixture]
-	public class FakePoseTests : MonoBehaviour
+	public class FakePoseTests
 	{
 		private Float3Comparer m_Float3Comparer;
 		private QuaternionComparer m_QuaternionComparer;
