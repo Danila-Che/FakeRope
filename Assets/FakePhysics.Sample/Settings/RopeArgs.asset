@@ -16,4 +16,4 @@ MonoBehaviour:
   m_Drag: 0
   m_Density: 7800
   m_Radius: 0.005
-  m_Stiffness: 0.04
+  m_Stiffness: 1

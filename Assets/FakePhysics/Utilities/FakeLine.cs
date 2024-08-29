@@ -79,7 +79,7 @@ namespace FakePhysics.Utilities
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static float3 Rotate(FakeLine sourceLine, FakeLine targetLine, float stiffness, float restAngle = 0f)
+		public static float3 Rotate(FakeLine sourceLine, FakeLine targetLine, float stiffness, float restAngleInRadians = 0f)
 		{
 			var directionA = GetDirection(sourceLine);
 			var directionB = GetDirection(targetLine);
@@ -87,7 +87,7 @@ namespace FakePhysics.Utilities
 			var dotProduct = math.dot(directionA, directionB);
 
 			var angle = math.acos(math.clamp(dotProduct, -1f, 1f));
-			angle -= restAngle;
+			angle -= restAngleInRadians;
 			angle = stiffness * angle;
 
 			if (math.isnan(angle) || math.abs(angle) < 0.001f)

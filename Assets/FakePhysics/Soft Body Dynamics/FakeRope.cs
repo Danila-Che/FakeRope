@@ -27,24 +27,18 @@ namespace FakePhysics.SoftBodyDynamics
 					var particle0 = Particles[constraint.Index0];
 					var particle1 = Particles[constraint.Index1];
 
-					var direction = particle1.Position - particle0.Position;
-					var length = math.length(direction);
+					var correction = SoftBodyComputations.CalculateDistanceConstraintCorrection(particle0, particle1, constraint.Distance);
 
-					if (length > 0f)
-					{
-						var error = (length - constraint.Distance) / length;
+					var w = particle0.InverseMass + particle1.InverseMass;
 
-						var w = particle0.InverseMass + particle1.InverseMass;
+					var k0 = particle0.InverseMass / w;
+					var k1 = particle1.InverseMass / w;
 
-						var k0 = particle0.InverseMass / w;
-						var k1 = particle1.InverseMass / w;
+					particle0.Position -= k0 * correction;
+					particle1.Position += k1 * correction;
 
-						particle0.Position += k0 * error * direction;
-						particle1.Position -= k1 * error * direction;
-
-						Particles[constraint.Index0] = particle0;
-						Particles[constraint.Index1] = particle1;
-					}
+					Particles[constraint.Index0] = particle0;
+					Particles[constraint.Index1] = particle1;
 				}
 			}
 		}
@@ -67,14 +61,21 @@ namespace FakePhysics.SoftBodyDynamics
 					var particle1 = Particles[constraint.Index1];
 					var particle2 = Particles[constraint.Index2];
 
-					var line0 = new FakeLine(particle0.Position, particle1.Position);
-					var line1 = new FakeLine(particle0.Position, particle2.Position);
+					var correction = SoftBodyComputations.CalculateBendGradient(particle0.Position, particle1.Position, particle2.Position);
 
-					var correction = Computations.Rotate(line0, line1, Stiffness);
+					var w = particle0.InverseMass + particle1.InverseMass + particle2.InverseMass;
 
-					particle1.Position = particle0.Position + correction;
+					var k0 = particle0.InverseMass / w;
+					var k1 = 2f * particle1.InverseMass / w;
+					var k2 = particle2.InverseMass / w;
 
+					particle0.Position += k0 * Stiffness * correction;
+					particle1.Position -= k1 * Stiffness * correction;
+					particle2.Position += k2 * Stiffness * correction;
+
+					Particles[constraint.Index0] = particle0;
 					Particles[constraint.Index1] = particle1;
+					Particles[constraint.Index2] = particle2;
 				}
 			}
 		}
