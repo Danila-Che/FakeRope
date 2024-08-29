@@ -19,7 +19,7 @@ namespace FakePhysics.EditModeTests
 		[Test]
 		public void Test_Create_Case0()
 		{
-			using var rope = new FakeRope(null, new RopeArgs(spanDistance: 2f));
+			using var rope = new FakeRope(null, new RopeArgsBuilder().SetSpanDistance(2f));
 			var sourcePosition = new float3(0f, 5f, 0f);
 			var targetPosition = new float3(0f, 0f, 0f);
 
@@ -35,7 +35,7 @@ namespace FakePhysics.EditModeTests
 		[Test]
 		public void Test_Create_Case1()
 		{
-			using var rope = new FakeRope(null, new RopeArgs(spanDistance: 2f));
+			using var rope = new FakeRope(null, new RopeArgsBuilder().SetSpanDistance(2f));
 			var sourcePosition = new float3(0f, 4f, 0f);
 			var targetPosition = new float3(0f, 0f, 0f);
 

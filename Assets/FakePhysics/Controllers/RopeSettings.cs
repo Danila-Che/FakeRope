@@ -16,7 +16,16 @@ namespace FakePhysics.Controllers
 		[SerializeField] private float m_Radius = 0.1f;
 		[Range(0f, 1f)]
 		[SerializeField] private float m_Stiffness = 0f;
+		[SerializeField] private bool m_NeedDistanceConstraint = true;
+		[SerializeField] private bool m_NeedBendConstraint = true;
 
-		public RopeArgs Args => new(m_SpanDistance, m_Drag, m_Density, m_Radius, m_Stiffness);
+		public RopeArgs Args => new RopeArgsBuilder()
+			.SetSpanDistance(m_SpanDistance)
+			.SetDrag(m_Drag)
+			.SetDensity(m_Density)
+			.SetRadius(m_Radius)
+			.SetStiffness(m_Stiffness)
+			.SetNeedDistanceConstraint(m_NeedDistanceConstraint)
+			.SetNeedBendConstraint(m_NeedBendConstraint);
 	}
 }

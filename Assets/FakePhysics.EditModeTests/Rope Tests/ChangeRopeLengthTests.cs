@@ -10,7 +10,7 @@ namespace FakePhysics.EditModeTests
 		[Test]
 		public void Test_AddParticle_CheckCount()
 		{
-			using var rope = new FakeRope(null, new RopeArgs(spanDistance: 2f));
+			using var rope = new FakeRope(null, new RopeArgsBuilder().SetSpanDistance(2f));
 
 			rope.Create(
 				sourcePosition: new float3(0f, 5f, 0f),
@@ -30,7 +30,7 @@ namespace FakePhysics.EditModeTests
 		[Test]
 		public void Test_RemoveParticle_CheckCount()
 		{
-			using var rope = new FakeRope(null, new RopeArgs(spanDistance: 2f));
+			using var rope = new FakeRope(null, new RopeArgsBuilder().SetSpanDistance(2f));
 
 			rope.Create(
 				sourcePosition: new float3(0f, 5f, 0f),

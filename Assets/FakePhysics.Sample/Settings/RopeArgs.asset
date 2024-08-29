@@ -17,3 +17,5 @@ MonoBehaviour:
   m_Density: 7800
   m_Radius: 0.005
   m_Stiffness: 1
+  m_NeedDistanceConstraint: 1
+  m_NeedBendConstraint: 0

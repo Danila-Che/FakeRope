@@ -183,49 +183,61 @@ namespace FakePhysics.SoftBodyDynamics
 
 			if (m_FakeJoint == null)
 			{
-				m_Job = new BendConstraintSolver
+				if (m_RopeArgs.NeedBendConstraint)
 				{
-					Particles = m_Particles,
-					BendConstraints = m_BendConstraints,
-					Stiffness = m_RopeArgs.Stiffness,
-				}.Schedule();
+					m_Job = new BendConstraintSolver
+					{
+						Particles = m_Particles,
+						BendConstraints = m_BendConstraints,
+						Stiffness = m_RopeArgs.Stiffness,
+					}.Schedule();
+				}
 
-				m_Job = new DistanceConstraintSolver
+				if (m_RopeArgs.NeedDistanceConstraint)
 				{
-					Particles = m_Particles,
-					DistanceConstraints = m_DistanceConstraints,
-				}.Schedule(m_Job);
+					m_Job = new DistanceConstraintSolver
+					{
+						Particles = m_Particles,
+						DistanceConstraints = m_DistanceConstraints,
+					}.Schedule(m_Job);
+				}
 			}
 			else
 			{
 				m_FakeJoint.RecalculateGlobalPoses();
 
-				m_Job = new BendConstraintSolver
+				if (m_RopeArgs.NeedBendConstraint)
 				{
-					Particles = m_Particles,
-					BendConstraints = m_BendConstraints,
-					Stiffness = m_RopeArgs.Stiffness,
-				}.Schedule();
-				m_Job.Complete();
+					m_Job = new BendConstraintSolver
+					{
+						Particles = m_Particles,
+						BendConstraints = m_BendConstraints,
+						Stiffness = m_RopeArgs.Stiffness,
+					}.Schedule();
+					m_Job.Complete();
+				}
 
-				SolveOuterConstraint(
+				if (m_RopeArgs.NeedDistanceConstraint)
+				{
+					SolveOuterConstraint(
 					particleIndex: 0,
 					m_FakeJoint.TargetBody,
 					m_FakeJoint.TargetGlobalPose.Position,
 					deltaTime);
 
-				m_Job = new DistanceConstraintSolver
-				{
-					Particles = m_Particles,
-					DistanceConstraints = m_DistanceConstraints,
-				}.Schedule();
-				m_Job.Complete();
+					m_Job = new DistanceConstraintSolver
+					{
+						Particles = m_Particles,
+						DistanceConstraints = m_DistanceConstraints,
+					}.Schedule();
+					m_Job.Complete();
 
-				SolveOuterConstraint(
-					m_Particles.Length - 1,
-					m_FakeJoint.AnchorBody,
-					m_FakeJoint.AnchorGlobalPose.Position,
-					deltaTime);
+					SolveOuterConstraint(
+						m_Particles.Length - 1,
+						m_FakeJoint.AnchorBody,
+						m_FakeJoint.AnchorGlobalPose.Position,
+						deltaTime);
+				}
 			}
 		}
 
