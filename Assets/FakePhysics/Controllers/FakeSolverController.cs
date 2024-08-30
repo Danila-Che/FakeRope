@@ -25,7 +25,7 @@ namespace FakePhysics.Controllers
 
 		private FakeSolver m_Solver;
 
-		private void OnEnable()
+		private void Awake()
 		{
 			m_Solver = new FakeSolver(m_SolverArgs);
 		}
