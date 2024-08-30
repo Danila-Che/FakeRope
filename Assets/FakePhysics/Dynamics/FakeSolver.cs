@@ -8,23 +8,32 @@ namespace FakePhysics.Dynamics
 {
 	public class FakeSolver
 	{
-		private readonly SolverArgs m_SolverArgs;
-
 		private readonly List<IDynamicBody> m_DynamicBodies;
 		private readonly List<ICollidingBody> m_CollidingBodies;
 		private readonly List<IConstrainedBody> m_ConstrainedBodies;
 
 		private readonly FakeCollisionDetectionSystem m_CollisionDetectionSystem;
 
+		private SolverArgs m_SolverArgs;
+
 		public FakeSolver(SolverArgs solverArgs)
+			: this()
 		{
 			m_SolverArgs = solverArgs;
+		}
 
+		public FakeSolver()
+		{
 			m_DynamicBodies = new List<IDynamicBody>();
 			m_CollidingBodies = new List<ICollidingBody>();
 			m_ConstrainedBodies = new List<IConstrainedBody>();
 
 			m_CollisionDetectionSystem = new FakeCollisionDetectionSystem();
+		}
+
+		public void RegisterArgs(SolverArgs solverArgs)
+		{
+			m_SolverArgs = solverArgs;
 		}
 
 		public void Add(IDynamicBody body)

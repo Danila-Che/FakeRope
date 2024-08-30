@@ -23,11 +23,11 @@ namespace FakePhysics.Controllers
 
 		[SerializeField] private SolverArgs m_SolverArgs;
 
-		private FakeSolver m_Solver;
+		private readonly FakeSolver m_Solver = new();
 
 		private void Awake()
 		{
-			m_Solver = new FakeSolver(m_SolverArgs);
+			m_Solver.RegisterArgs(m_SolverArgs);
 		}
 
 		private void FixedUpdate()
