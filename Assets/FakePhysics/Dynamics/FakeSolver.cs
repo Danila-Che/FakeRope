@@ -78,8 +78,8 @@ namespace FakePhysics.Dynamics
 				}
 
 				SolveDynamics(substepDeltaTime);
-				SolveCollisions(substepDeltaTime);
 				SolveConstraints(substepDeltaTime);
+				SolveCollisions(deltaTime);
 
 				for (int i = 0; i < m_DynamicBodies.Count; i++)
 				{
@@ -114,9 +114,14 @@ namespace FakePhysics.Dynamics
 		private void SolveCollisions(float deltaTime)
 		{
 			var substepDeltaTime = deltaTime / m_SolverArgs.SolverCollisionIteractionNumber;
+			var hasCollisions = true;
 
 			for (int substep = 0; substep < m_SolverArgs.SolverCollisionIteractionNumber; substep++)
 			{
+				if (hasCollisions is false) { break; }
+
+				hasCollisions = false;
+
 				for (int i = 0; i < m_CollidingBodies.Count - 1; i++)
 				{
 					var body0 = m_CollidingBodies[i];
@@ -146,9 +151,11 @@ namespace FakePhysics.Dynamics
 									body1,
 									-contactPair.Normal * contactPair.PenetrationDepth,
 									0f,
-									substepDeltaTime,
+									deltaTime,
 									origin,
 									origin);
+
+								hasCollisions = true;
 							}
 						}
 					}
@@ -207,6 +214,45 @@ namespace FakePhysics.Dynamics
 				normal = -normal;
 				body1.ApplyCorrection(normal, position1, velocityLevel);
 			}
-	}
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static void ApplyBodyPairCorrection(
+			ICollidingBody body0,
+			float body1InverseMass,
+			float3 correction,
+			float compliance,
+			float deltaTime,
+			float3? position0 = null,
+			bool velocityLevel = false)
+		{
+			var correctionLength = math.length(correction);
+
+			if (correctionLength == 0f)
+			{
+				return;
+			}
+
+			body0 = body0 == null ? null : body0.IsKinematic ? null : body0;
+
+			if (body0 == null) { return; }
+
+			var normal = correction / correctionLength;
+
+			var w0 = body0 == null ? 0f : body0.GetInverseMass(normal, position0);
+			var w1 = body1InverseMass;
+
+			var w = w0 + w1;
+
+			if (w == 0f || math.isnan(w))
+			{
+				return;
+			}
+
+			var lambda = -correctionLength / (w + compliance / (deltaTime * deltaTime));
+			normal *= -lambda;
+
+			body0?.ApplyCorrection(normal, position0, velocityLevel);
+		}
 	}
 }

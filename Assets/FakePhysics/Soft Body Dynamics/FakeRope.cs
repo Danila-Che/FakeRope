@@ -63,11 +63,11 @@ namespace FakePhysics.SoftBodyDynamics
 
 					var correction = SoftBodyComputations.CalculateBendGradient(particle0.Position, particle1.Position, particle2.Position);
 
-					var w = particle0.InverseMass + particle1.InverseMass + particle2.InverseMass;
+					var w = particle0.InverseMass + 2f * particle1.InverseMass + particle2.InverseMass;
 
-					var k0 = particle0.InverseMass / w;
-					var k1 = 2f * particle1.InverseMass / w;
-					var k2 = particle2.InverseMass / w;
+					var k0 = 2f * particle0.InverseMass / w;
+					var k1 = 4f * particle1.InverseMass / w;
+					var k2 = 2f * particle2.InverseMass / w;
 
 					particle0.Position += k0 * Stiffness * correction;
 					particle1.Position -= k1 * Stiffness * correction;
@@ -183,61 +183,11 @@ namespace FakePhysics.SoftBodyDynamics
 
 			if (m_FakeJoint == null)
 			{
-				if (m_RopeArgs.NeedBendConstraint)
-				{
-					m_Job = new BendConstraintSolver
-					{
-						Particles = m_Particles,
-						BendConstraints = m_BendConstraints,
-						Stiffness = m_RopeArgs.Stiffness,
-					}.Schedule();
-				}
-
-				if (m_RopeArgs.NeedDistanceConstraint)
-				{
-					m_Job = new DistanceConstraintSolver
-					{
-						Particles = m_Particles,
-						DistanceConstraints = m_DistanceConstraints,
-					}.Schedule(m_Job);
-				}
+				SolveConstraintsWithoutBodies();
 			}
 			else
 			{
-				m_FakeJoint.RecalculateGlobalPoses();
-
-				if (m_RopeArgs.NeedBendConstraint)
-				{
-					m_Job = new BendConstraintSolver
-					{
-						Particles = m_Particles,
-						BendConstraints = m_BendConstraints,
-						Stiffness = m_RopeArgs.Stiffness,
-					}.Schedule();
-					m_Job.Complete();
-				}
-
-				if (m_RopeArgs.NeedDistanceConstraint)
-				{
-					SolveOuterConstraint(
-					particleIndex: 0,
-					m_FakeJoint.TargetBody,
-					m_FakeJoint.TargetGlobalPose.Position,
-					deltaTime);
-
-					m_Job = new DistanceConstraintSolver
-					{
-						Particles = m_Particles,
-						DistanceConstraints = m_DistanceConstraints,
-					}.Schedule();
-					m_Job.Complete();
-
-					SolveOuterConstraint(
-						m_Particles.Length - 1,
-						m_FakeJoint.AnchorBody,
-						m_FakeJoint.AnchorGlobalPose.Position,
-						deltaTime);
-				}
+				SolveConstraintsWithBodies(deltaTime);
 			}
 		}
 
@@ -335,6 +285,67 @@ namespace FakePhysics.SoftBodyDynamics
 			}
 		}
 
+
+		private void SolveConstraintsWithoutBodies()
+		{
+			if (m_RopeArgs.NeedBendConstraint)
+			{
+				m_Job = new BendConstraintSolver
+				{
+					Particles = m_Particles,
+					BendConstraints = m_BendConstraints,
+					Stiffness = m_RopeArgs.Stiffness,
+				}.Schedule(m_Job);
+			}
+
+			if (m_RopeArgs.NeedDistanceConstraint)
+			{
+				m_Job = new DistanceConstraintSolver
+				{
+					Particles = m_Particles,
+					DistanceConstraints = m_DistanceConstraints,
+				}.Schedule(m_Job);
+			}
+		}
+
+		private void SolveConstraintsWithBodies(float deltaTime)
+		{
+			m_FakeJoint.RecalculateGlobalPoses();
+
+			if (m_RopeArgs.NeedBendConstraint)
+			{
+				m_Job = new BendConstraintSolver
+				{
+					Particles = m_Particles,
+					BendConstraints = m_BendConstraints,
+					Stiffness = m_RopeArgs.Stiffness,
+				}.Schedule();
+				m_Job.Complete();
+			}
+
+			if (m_RopeArgs.NeedDistanceConstraint)
+			{
+				SolveOuterConstraint(
+					particleIndex: 0,
+					m_FakeJoint.TargetBody,
+					m_FakeJoint.TargetGlobalPose.Position,
+					deltaTime);
+
+				m_Job = new DistanceConstraintSolver
+				{
+					Particles = m_Particles,
+					DistanceConstraints = m_DistanceConstraints,
+				}.Schedule();
+				m_Job.Complete();
+
+				SolveOuterConstraint(
+					m_Particles.Length - 1,
+					m_FakeJoint.AnchorBody,
+					m_FakeJoint.AnchorGlobalPose.Position,
+					deltaTime);
+			}
+		}
+
 		private void CreateParticles(float3 sourcePosition, float3 targetPosition)
 		{
 			var vector = sourcePosition - targetPosition;
@@ -399,28 +410,29 @@ namespace FakePhysics.SoftBodyDynamics
 		private void SolveOuterConstraint(int particleIndex, FakeRigidBody body, float3 globalPosition, float deltaTime)
 		{
 			var particle = m_Particles[particleIndex];
-			var correction = Computations.CalculateCorrection(globalPosition, particle.Position);
+			var correction = Computations.CalculateGradient(particle.Position, globalPosition);
 
-			if (math.any(correction))
+			if (body.IsKinematic)
 			{
+				particle.Position -= correction;
+			}
+			else if (math.any(correction))
+			{
+				var bodyInverseMass = body.GetInverseMass(math.normalize(correction), globalPosition);
+				var k0 = particle.InverseMass / (bodyInverseMass + particle.InverseMass);
+
+				particle.Position -= k0 * correction;
+
 				DynamicsComputations.ApplyBodyPairCorrection(
 					body,
-					null,
+					particle.InverseMass,
 					correction,
 					0f,
 					deltaTime,
-					globalPosition,
-					particle.Position);
-
-				var bodyInverseMass = body.IsKinematic ? 0f : body.GetInverseMass(math.normalize(correction), globalPosition);
-
-				var w = bodyInverseMass + particle.InverseMass;
-				var k = particle.InverseMass / w;
-
-				particle.Position -= k * correction;
-
-				m_Particles[particleIndex] = particle;
+					globalPosition);
 			}
+
+			m_Particles[particleIndex] = particle;
 		}
 	}
 }

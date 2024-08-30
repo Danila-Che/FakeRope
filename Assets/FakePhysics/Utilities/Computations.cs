@@ -20,9 +20,9 @@ namespace FakePhysics.Utilities
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static float3 CalculateCorrection(float3 from, float3 to, float distance)
+		public static float3 CalculateCorrection(float3 p1, float3 p2, float distance)
 		{
-			var direction = to - from;
+			var direction = p1 - p2;
 			var length = math.length(direction);
 			var error = (length - distance) / length;
 
@@ -30,9 +30,9 @@ namespace FakePhysics.Utilities
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static float3 CalculateCorrection(float3 from, float3 to)
+		public static float3 CalculateGradient(float3 p1, float3 p2)
 		{
-			return to - from;
+			return p1 - p2;
 		}
 	}
 }

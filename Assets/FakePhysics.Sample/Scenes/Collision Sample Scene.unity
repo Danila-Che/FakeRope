@@ -494,9 +494,9 @@ MonoBehaviour:
       x: 0
       y: -9.81
       z: 0
-    m_SubstepIteractionsNumber: 25
+    m_SubstepIteractionsNumber: 1
     m_SolvePositionIteractionsNumber: 1
-    m_SolverCollisionIteractionNumber: 5
+    m_SolverCollisionIteractionNumber: 1
 --- !u!1 &328582598
 GameObject:
   m_ObjectHideFlags: 0

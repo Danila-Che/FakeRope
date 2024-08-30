@@ -62,6 +62,8 @@ namespace FakePhysics.RigidBodyDynamics
 
 		public FakeBoxCollider BoxCollider => m_BoxCollider;
 
+		public float InverseMass => m_InverseMass;
+
 		public void UpdateWith(FakePose pose)
 		{
 			m_Pose = pose;
