@@ -8,6 +8,8 @@ namespace FakePhysics.Dynamics
 	public class SolverArgs
 	{
 		[SerializeField] private float3 m_GravitationalAcceleration = Physics.gravity;
+		[Min(0f)]
+		[SerializeField] private float m_Compliance = 0f;
 		[Min(1)]
 		[SerializeField] private int m_SubstepIteractionsNumber = 1;
 		[Min(1)]
@@ -16,8 +18,13 @@ namespace FakePhysics.Dynamics
 		[SerializeField] private int m_SolverCollisionIteractionNumber = 1;
 
 		public float3 GravitationalAcceleration => m_GravitationalAcceleration;
+		
+		public float Compliance => m_Compliance;
+		
 		public int SubstepIteractionsNumber => m_SubstepIteractionsNumber;
+		
 		public int SolvePositionIteractionsNumber => m_SolvePositionIteractionsNumber;
+		
 		public int SolverCollisionIteractionNumber => m_SolverCollisionIteractionNumber;
 	}
 }

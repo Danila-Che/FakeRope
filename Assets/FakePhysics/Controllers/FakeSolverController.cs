@@ -22,6 +22,7 @@ namespace FakePhysics.Controllers
 		public event Action AfterStep;
 
 		[SerializeField] private SolverArgs m_SolverArgs;
+		[SerializeField] private bool m_ShowDebug;
 
 		private readonly FakeSolver m_Solver = new();
 
@@ -38,6 +39,40 @@ namespace FakePhysics.Controllers
 
 			AfterStep?.Invoke();
 		}
+
+#if UNITY_EDITOR
+
+		private void OnDrawGizmos()
+		{
+			if (m_Solver == null || m_ShowDebug is false)
+			{
+				return;
+			}
+
+			Gizmos.color = Color.green;
+
+			foreach (var contactPair in m_Solver.ContactPairs)
+			{
+				foreach (var contact in contactPair.Points)
+				{
+					Gizmos.DrawRay(contact, contactPair.Normal);
+				}
+			}
+
+			Gizmos.color = Color.red;
+
+			foreach (var contactPair in m_Solver.ContactPairs)
+			{
+				foreach (var contact in contactPair.Points)
+				{
+					Gizmos.DrawRay(contact, contactPair.Normal * contactPair.PenetrationDepth);
+				}
+			}
+
+			m_Solver.ContactPairs.Clear();
+		}
+
+#endif
 
 		public void RegisterRigidBody(FakeRigidBody body)
 		{

@@ -2,6 +2,7 @@ using FakePhysics.CollisionDetection;
 using FakePhysics.Dynamics;
 using FakePhysics.Utilities;
 using Unity.Mathematics;
+using UnityEngine;
 
 namespace FakePhysics.RigidBodyDynamics
 {
@@ -18,6 +19,7 @@ namespace FakePhysics.RigidBodyDynamics
 		private float3 m_Velocity;
 		private float3 m_AngularVelocity;
 		private readonly float3 m_Drag;
+		private readonly float3 m_AngularDrag;
 
 		private readonly float m_InverseMass;
 		private readonly float3 m_InverseInertiaTensor;
@@ -27,16 +29,32 @@ namespace FakePhysics.RigidBodyDynamics
 		{
 			m_IsKinematic = rigidbody.isKinematic;
 			m_Drag = rigidbody.drag;
+			m_AngularDrag = rigidbody.angularDrag;
 
 			m_BoxCollider = boxCollider;
 
 			m_InverseMass = math.isfinite(rigidbody.mass) switch
 			{
-				true => 1.0f / rigidbody.mass,
-				false => 0.0f,
+				true => 1f / rigidbody.mass,
+				false => 0f,
 			};
 
 			m_InverseInertiaTensor = CollisionComputations.CalculateInverseInertiaTensor(boxCollider, rigidbody.mass);
+
+			if (rigidbody.IsConstrainedBy(RigidbodyConstraints.FreezeRotationX))
+			{
+				m_InverseInertiaTensor.x = 0f;
+			}
+
+			if (rigidbody.IsConstrainedBy(RigidbodyConstraints.FreezeRotationY))
+			{
+				m_InverseInertiaTensor.y = 0f;
+			}
+
+			if (rigidbody.IsConstrainedBy(RigidbodyConstraints.FreezeRotationZ))
+			{
+				m_InverseInertiaTensor.z = 0f;
+			}
 		}
 
 		public FakeRigidBody(FakePose pose, FakeBoxCollider boxCollider)
@@ -46,13 +64,14 @@ namespace FakePhysics.RigidBodyDynamics
 
 			m_IsKinematic = true;
 			m_Drag = 0f;
+			m_AngularDrag = 0f;
 
 			m_Velocity = float3.zero;
 			m_AngularVelocity = float3.zero;
 
 			m_BoxCollider = boxCollider;
 
-			m_InverseMass = 0.0f;
+			m_InverseMass = 0f;
 			m_InverseInertiaTensor = m_InverseInertiaTensor = CollisionComputations.CalculateInverseInertiaTensor(boxCollider, math.INFINITY);
 		}
 
@@ -63,6 +82,8 @@ namespace FakePhysics.RigidBodyDynamics
 		public FakeBoxCollider BoxCollider => m_BoxCollider;
 
 		public float InverseMass => m_InverseMass;
+
+		public float3 InverseInertiaTensor => m_InverseInertiaTensor;
 
 		public void UpdateWith(FakePose pose)
 		{
@@ -93,11 +114,11 @@ namespace FakePhysics.RigidBodyDynamics
 
 			var deltaQuaternion = math.mul(m_Pose.Rotation, math.inverse(m_PreviousPose.Rotation));
 			m_AngularVelocity = new float3(
-				x: 2.0f * deltaQuaternion.value.x / deltaTime,
-				y: 2.0f * deltaQuaternion.value.y / deltaTime,
-				z: 2.0f * deltaQuaternion.value.z / deltaTime);
+				x: 2f * deltaQuaternion.value.x / deltaTime,
+				y: 2f * deltaQuaternion.value.y / deltaTime,
+				z: 2f * deltaQuaternion.value.z / deltaTime);
 
-			if (deltaQuaternion.value.w < 0.0f)
+			if (deltaQuaternion.value.w < 0f)
 			{
 				m_AngularVelocity = -m_AngularVelocity;
 			}
@@ -112,6 +133,9 @@ namespace FakePhysics.RigidBodyDynamics
 		{
 			var drag = m_Velocity * m_Drag;
 			m_Velocity -= m_InverseMass * deltaTime * drag;
+
+			var angularDrag = m_AngularVelocity * m_AngularDrag;
+			m_AngularVelocity -= m_InverseMass * deltaTime * angularDrag;
 		}
 
 		public float GetInverseMass(float3 normal, float3? position = null)
@@ -170,7 +194,7 @@ namespace FakePhysics.RigidBodyDynamics
 			}
 		}
 
-		private void ApplyRotation(float3 rotation, float scale = 1.0f)
+		private void ApplyRotation(float3 rotation, float scale = 1f)
 		{
 			var phi = math.length(rotation);
 
@@ -183,7 +207,7 @@ namespace FakePhysics.RigidBodyDynamics
 				x: rotation.x * scale,
 				y: rotation.y * scale,
 				z: rotation.z * scale,
-				w: 0.0f);
+				w: 0f);
 			deltaQuaternion = math.mul(deltaQuaternion, m_Pose.Rotation);
 
 			var quaternion = new quaternion(

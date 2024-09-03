@@ -58,5 +58,10 @@ namespace FakePhysics.Utilities
 				list.RemoveAt(list.Length - 1);
 			}
 		}
+
+		public static bool IsConstrainedBy(this Rigidbody rigidbody, RigidbodyConstraints constraint)
+		{
+			return (rigidbody.constraints & constraint) == constraint;
+		}
 	}
 }

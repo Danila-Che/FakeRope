@@ -13,6 +13,7 @@ namespace FakePhysics.Dynamics
 		private readonly List<IConstrainedBody> m_ConstrainedBodies;
 
 		private readonly FakeCollisionDetectionSystem m_CollisionDetectionSystem;
+		private readonly List<FakeContactPair> m_ContactPairs;
 
 		private SolverArgs m_SolverArgs;
 
@@ -29,7 +30,10 @@ namespace FakePhysics.Dynamics
 			m_ConstrainedBodies = new List<IConstrainedBody>();
 
 			m_CollisionDetectionSystem = new FakeCollisionDetectionSystem();
+			m_ContactPairs = new List<FakeContactPair>();
 		}
+
+		public List<FakeContactPair> ContactPairs => m_ContactPairs;
 
 		public void RegisterArgs(SolverArgs solverArgs)
 		{
@@ -88,7 +92,7 @@ namespace FakePhysics.Dynamics
 
 				SolveDynamics(substepDeltaTime);
 				SolveConstraints(substepDeltaTime);
-				SolveCollisions(deltaTime);
+				SolveCollisions(substepDeltaTime);
 
 				for (int i = 0; i < m_DynamicBodies.Count; i++)
 				{
@@ -122,7 +126,7 @@ namespace FakePhysics.Dynamics
 
 		private void SolveCollisions(float deltaTime)
 		{
-			var substepDeltaTime = deltaTime / m_SolverArgs.SolverCollisionIteractionNumber;
+			//var substepDeltaTime = deltaTime / m_SolverArgs.SolverCollisionIteractionNumber;
 			var hasCollisions = true;
 
 			for (int substep = 0; substep < m_SolverArgs.SolverCollisionIteractionNumber; substep++)
@@ -144,32 +148,41 @@ namespace FakePhysics.Dynamics
 							continue;
 						}
 
-						if (m_CollisionDetectionSystem.TryGetCollisionPoints(
-							body0.BoxCollider,
-							body0.Pose,
-							body1.BoxCollider,
-							body1.Pose,
-							out FakeContactPair contactPair))
-						{
-							var origin = contactPair.Points.GetOrigin();
-
-							if (contactPair.PenetrationDepth > 0f)
-							{
-								DynamicsComputations.ApplyBodyPairCorrection(
-									body0,
-									body1,
-									-contactPair.Normal * contactPair.PenetrationDepth,
-									0f,
-									deltaTime,
-									origin,
-									origin);
-
-								hasCollisions = true;
-							}
-						}
+						hasCollisions |= SolveCollisions(body0, body1, deltaTime);
 					}
 				}
 			}
+		}
+
+		private bool SolveCollisions(ICollidingBody body0, ICollidingBody body1, float deltaTime)
+		{
+			if (m_CollisionDetectionSystem.TryGetCollisionPoints(
+				body0.BoxCollider,
+				body0.Pose,
+				body1.BoxCollider,
+				body1.Pose,
+				out FakeContactPair contactPair))
+			{
+				if (contactPair.PenetrationDepth > math.EPSILON)
+				{
+					var origin = contactPair.Points.GetOrigin();
+
+					DynamicsComputations.ApplyBodyPairCorrection(
+						body0,
+						body1,
+						-contactPair.Normal * contactPair.PenetrationDepth,
+						m_SolverArgs.Compliance,
+						deltaTime,
+						origin,
+						origin);
+
+					m_ContactPairs.Add(contactPair);
+
+					return true;
+				}
+			}
+
+			return false;
 		}
 	}
 
@@ -188,7 +201,7 @@ namespace FakePhysics.Dynamics
 		{
 			var correctionLength = math.length(correction);
 
-			if (correctionLength == 0f)
+			if (correctionLength < math.EPSILON)
 			{
 				return;
 			}
@@ -208,13 +221,19 @@ namespace FakePhysics.Dynamics
 
 			var w = w0 + w1;
 
-			if (w == 0f || math.isnan(w))
+			if (w < math.EPSILON || math.isnan(w))
 			{
 				return;
 			}
 
-			var lambda = -correctionLength / (w + compliance / (deltaTime * deltaTime));
-			normal *= -lambda;
+			var lambda = correctionLength / (w + compliance / (deltaTime * deltaTime));
+
+			if (lambda < math.EPSILON || math.isnan(lambda))
+			{
+				return;
+			}
+
+			normal *= lambda;
 
 			body0?.ApplyCorrection(normal, position0, velocityLevel);
 
@@ -258,8 +277,8 @@ namespace FakePhysics.Dynamics
 				return;
 			}
 
-			var lambda = -correctionLength / (w + compliance / (deltaTime * deltaTime));
-			normal *= -lambda;
+			var lambda = correctionLength / (w + compliance / (deltaTime * deltaTime));
+			normal *= lambda;
 
 			body0?.ApplyCorrection(normal, position0, velocityLevel);
 		}
