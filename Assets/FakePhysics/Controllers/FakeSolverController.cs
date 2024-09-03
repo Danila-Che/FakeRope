@@ -16,7 +16,7 @@ namespace FakePhysics.Controllers
 	}
 
 	[DefaultExecutionOrder((int)ExecutionOrder.Solver)]
-	internal class FakeSolverController : MonoBehaviour
+	public sealed class FakeSolverController : MonoBehaviour
 	{
 		public event Action BeforeStep;
 		public event Action AfterStep;

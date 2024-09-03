@@ -10,7 +10,7 @@ namespace FakePhysics.Controllers
 {
 	[RequireComponent(typeof(IRenderer))]
 	[DefaultExecutionOrder((int)ExecutionOrder.SoftBody)]
-	public class FakeRopeController : MonoBehaviour
+	public sealed class FakeRopeController : MonoBehaviour
 	{
 		[Header("First Body")]
 		[SerializeField] private FakeRigidBodyController m_AnchorBody;
