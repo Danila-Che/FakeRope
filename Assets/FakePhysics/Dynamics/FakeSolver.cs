@@ -8,12 +8,44 @@ namespace FakePhysics.Dynamics
 {
 	public class FakeSolver
 	{
+		public readonly struct Contact
+		{
+			public readonly ICollidingBody Body0;
+			public readonly ICollidingBody Body1;
+			public readonly float3 Point;
+			public readonly float3 Normal;
+			public readonly float Depth;
+			public readonly float3 DeltaVDirection;
+			public readonly float DeltaVLength;
+			public readonly float Friction;
+
+			public Contact(
+				ICollidingBody body0,
+				ICollidingBody body1,
+				float3 point,
+				float3 normal,
+				float depth,
+				float3 deltaVDirection,
+				float deltaVLength,
+				float friction)
+			{
+				Body0 = body0;
+				Body1 = body1;
+				Point = point;
+				Normal = normal;
+				Depth = depth;
+				DeltaVDirection = deltaVDirection;
+				DeltaVLength = deltaVLength;
+				Friction = friction;
+			}
+		}
+
 		private readonly List<IDynamicBody> m_DynamicBodies;
 		private readonly List<ICollidingBody> m_CollidingBodies;
 		private readonly List<IConstrainedBody> m_ConstrainedBodies;
 
 		private readonly FakeCollisionDetectionSystem m_CollisionDetectionSystem;
-		private readonly List<FakeContactPair> m_ContactPairs;
+		private readonly List<Contact> m_Contacts;
 
 		private SolverArgs m_SolverArgs;
 
@@ -30,10 +62,10 @@ namespace FakePhysics.Dynamics
 			m_ConstrainedBodies = new List<IConstrainedBody>();
 
 			m_CollisionDetectionSystem = new FakeCollisionDetectionSystem();
-			m_ContactPairs = new List<FakeContactPair>();
+			m_Contacts = new List<Contact>();
 		}
 
-		public List<FakeContactPair> ContactPairs => m_ContactPairs;
+		public List<Contact> ContactPairs => m_Contacts;
 
 		public void RegisterArgs(SolverArgs solverArgs)
 		{
@@ -90,14 +122,42 @@ namespace FakePhysics.Dynamics
 					m_DynamicBodies[i].BeginStep();
 				}
 
+				SolveFriction(substepDeltaTime);
 				SolveDynamics(substepDeltaTime);
 				SolveConstraints(substepDeltaTime);
+				m_Contacts.Clear();
 				SolveCollisions(substepDeltaTime);
 
 				for (int i = 0; i < m_DynamicBodies.Count; i++)
 				{
 					m_DynamicBodies[i].EndStep(substepDeltaTime);
 				}
+			}
+		}
+
+		private void SolveFriction(float deltaTime)
+		{
+			for (int i = 0; i < m_Contacts.Count; i++)
+			{
+				var contact = m_Contacts[i];
+				var limit = contact.Friction * deltaTime;
+
+				limit = contact.Body0?.CalculateFirctionForceLimit(
+					limit,
+					contact.Normal,
+					contact.Point,
+					contact.DeltaVDirection,
+					contact.DeltaVLength) ?? limit;
+
+				limit = contact.Body1?.CalculateFirctionForceLimit(
+					limit,
+					-contact.Normal,
+					contact.Point,
+					-contact.DeltaVDirection,
+					contact.DeltaVLength) ?? limit;
+
+				contact.Body0?.ApplyCorrection(limit * contact.DeltaVDirection, contact.Point, true);
+				contact.Body1?.ApplyCorrection(-limit * contact.DeltaVDirection, contact.Point, true);
 			}
 		}
 
@@ -176,13 +236,40 @@ namespace FakePhysics.Dynamics
 						origin,
 						origin);
 
-					m_ContactPairs.Add(contactPair);
+					AddContact(body0, body1, origin, contactPair.Normal, contactPair.PenetrationDepth);
 
 					return true;
 				}
 			}
 
 			return false;
+		}
+
+		private void AddContact(ICollidingBody body0, ICollidingBody body1, float3 point, float3 normal, float depth)
+		{
+			var pointVelocity0 = body0?.GetVelocityAt(point) ?? float3.zero;
+			var pointVelocity1 = body1?.GetVelocityAt(point) ?? float3.zero;
+			var projection0 = math.dot(pointVelocity0, normal);
+			var projection1 = math.dot(pointVelocity1, normal);
+
+			var deltaV = pointVelocity0 - pointVelocity1 - (projection0 - projection1) * normal;
+			var deltaVLength = math.length(deltaV);
+			var deltaVDirection = float3.zero;
+
+			if (deltaVLength != 0f)
+			{
+				deltaVDirection = deltaV / deltaVLength;
+			}
+
+			m_Contacts.Add(new Contact(
+				body0.IsKinematic ? null : body0,
+				body1.IsKinematic ? null : body1,
+				point,
+				normal,
+				math.max(0f, depth),
+				deltaVDirection,
+				deltaVLength,
+				-m_SolverArgs.Friction));
 		}
 	}
 

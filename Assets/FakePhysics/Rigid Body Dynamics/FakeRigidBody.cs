@@ -159,8 +159,43 @@ namespace FakePhysics.RigidBodyDynamics
 			return w;
 		}
 
+		public float CalculateFirctionForceLimit(
+			float frictionMagnitude,
+			float3 contactNormal,
+			float3 contactPoint,
+			float3 deltaVDirection,
+			float deltaVMagnitude)
+		{
+			var beforePointV = GetVelocityAt(contactPoint);
+			var beforeVelocity = m_Velocity;
+			var beforeAngularVelocity = m_AngularVelocity;
+			var correctionAmount = deltaVDirection * frictionMagnitude;
+
+			ApplyCorrection(correctionAmount, contactPoint, true);
+
+			var afterPointV = GetVelocityAt(contactPoint);
+			var actualDeltaV = afterPointV - beforePointV;
+			var actualTangDeltaV = actualDeltaV - contactNormal * math.dot(actualDeltaV, contactNormal);
+			var actualTDVLenght = math.length(actualTangDeltaV);
+
+			m_Velocity = beforeVelocity;
+			m_AngularVelocity = beforeAngularVelocity;
+
+			var reduction = actualTDVLenght == 0f ? 0f : math.clamp(deltaVMagnitude / actualTDVLenght, 0, 1);
+			return reduction * frictionMagnitude;
+		}
+
+		public float3 GetVelocityAt(float3 position)
+		{
+			var velocity = math.cross(position - m_Pose.Position, m_AngularVelocity);
+
+			return m_Velocity - velocity;
+		}
+
 		public void ApplyCorrection(float3 correction, float3? position = null, bool velocityLevel = false)
 		{
+			if (m_IsKinematic) { return; }
+
 			float3 deltaQuaternion;
 			if (position == null)
 			{

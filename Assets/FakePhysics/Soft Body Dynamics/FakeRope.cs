@@ -111,6 +111,16 @@ namespace FakePhysics.SoftBodyDynamics
 			}
 		}
 
+		public float Length
+		{
+			get
+			{
+				var length = (m_DistanceConstraints.Length - 1) * m_RopeArgs.SpanDistance;
+
+				return length + m_DistanceConstraints[^1].Distance;
+			}
+		}
+
 		public void Dispose()
 		{
 			m_Job.Complete();

@@ -49,27 +49,14 @@ namespace FakePhysics.Controllers
 				return;
 			}
 
-			Gizmos.color = Color.green;
-
 			foreach (var contactPair in m_Solver.ContactPairs)
 			{
-				foreach (var contact in contactPair.Points)
-				{
-					Gizmos.DrawRay(contact, contactPair.Normal);
-				}
+				Gizmos.color = Color.green;
+				Gizmos.DrawRay(contactPair.Point, contactPair.Normal);
+
+				Gizmos.color = Color.red;
+				Gizmos.DrawRay(contactPair.Point, contactPair.Normal * contactPair.Depth);
 			}
-
-			Gizmos.color = Color.red;
-
-			foreach (var contactPair in m_Solver.ContactPairs)
-			{
-				foreach (var contact in contactPair.Points)
-				{
-					Gizmos.DrawRay(contact, contactPair.Normal * contactPair.PenetrationDepth);
-				}
-			}
-
-			m_Solver.ContactPairs.Clear();
 		}
 
 #endif

@@ -14,6 +14,15 @@ namespace FakePhysics.Dynamics
 
 		float GetInverseMass(float3 normal, float3? position = null);
 
+		float CalculateFirctionForceLimit(
+			float frictionMagnitude,
+			float3 contactNormal,
+			float3 contactPoint,
+			float3 deltaVDirection,
+			float deltaVMagnitude);
+
 		void ApplyCorrection(float3 correction, float3? position = null, bool velocityLevel = false);
+
+		float3 GetVelocityAt(float3 position);
 	}
 }
