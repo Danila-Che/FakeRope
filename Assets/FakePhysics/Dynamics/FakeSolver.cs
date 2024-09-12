@@ -1,12 +1,14 @@
 using FakePhysics.CollisionDetection;
 using FakePhysics.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using Unity.Entities;
 using Unity.Mathematics;
 
 namespace FakePhysics.Dynamics
 {
-	public class FakeSolver
+	public class FakeSolver : IDisposable
 	{
 		public readonly struct Contact
 		{
@@ -49,11 +51,8 @@ namespace FakePhysics.Dynamics
 
 		private SolverArgs m_SolverArgs;
 
-		public FakeSolver(SolverArgs solverArgs)
-			: this()
-		{
-			m_SolverArgs = solverArgs;
-		}
+		private EntityManager m_EntityManager;
+		private World m_CustomWorld;
 
 		public FakeSolver()
 		{
@@ -66,6 +65,24 @@ namespace FakePhysics.Dynamics
 		}
 
 		public List<Contact> ContactPairs => m_Contacts;
+
+		public EntityManager EntityManager => m_EntityManager;
+
+		public World DynamicWorld => m_CustomWorld;
+
+		public void CreateWorld()
+		{
+			m_CustomWorld = new World("Dynamic World");
+			m_EntityManager = m_CustomWorld.EntityManager;
+		}
+
+		public void Dispose()
+		{
+			if (m_CustomWorld.IsCreated)
+			{
+				m_CustomWorld.Dispose();
+			}
+		}
 
 		public void RegisterArgs(SolverArgs solverArgs)
 		{

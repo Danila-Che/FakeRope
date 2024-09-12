@@ -24,7 +24,7 @@ namespace FakePhysics.RigidBodyDynamics
 		private readonly float m_InverseMass;
 		private readonly float3 m_InverseInertiaTensor;
 
-		public FakeRigidBody(UnityEngine.Rigidbody rigidbody, FakeBoxCollider boxCollider)
+		public FakeRigidBody(Rigidbody rigidbody, FakeBoxCollider boxCollider)
 			: this(rigidbody.ToPose(), boxCollider)
 		{
 			m_IsKinematic = rigidbody.isKinematic;
@@ -72,7 +72,7 @@ namespace FakePhysics.RigidBodyDynamics
 			m_BoxCollider = boxCollider;
 
 			m_InverseMass = 0f;
-			m_InverseInertiaTensor = m_InverseInertiaTensor = CollisionComputations.CalculateInverseInertiaTensor(boxCollider, math.INFINITY);
+			m_InverseInertiaTensor = CollisionComputations.CalculateInverseInertiaTensor(boxCollider, math.INFINITY);
 		}
 
 		public bool IsKinematic => m_IsKinematic;
