@@ -1,3 +1,5 @@
+#if USE_UNITY_ENTITIES
+
 using Unity.Burst;
 using Unity.Entities;
 
@@ -22,3 +24,5 @@ namespace FakePhysics.RigidBodyDynamics.Systems
 		}
 	}
 }
+
+#endif

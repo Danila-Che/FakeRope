@@ -4,7 +4,7 @@ using UnityEngine;
 namespace FakePhysics.Controllers
 {
 	[CreateAssetMenu(fileName = "RopeArgs", menuName = "SoftBodyDynamics/RopeArgs")]
-	public sealed class RopeSettings : ScriptableObject
+	public class RopeSettings : ScriptableObject
 	{
 		[Min(0.01f)]
 		[SerializeField] private float m_SpanDistance = 1f;

@@ -1,3 +1,5 @@
+#if USE_UNITY_ENTITIES
+
 using FakePhysics.CollisionDetection;
 using FakePhysics.Utilities;
 using System.Runtime.CompilerServices;
@@ -196,3 +198,5 @@ namespace FakePhysics.RigidBodyDynamics
 		}
 	}
 }
+
+#endif

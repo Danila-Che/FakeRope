@@ -6,7 +6,7 @@ namespace FakePhysics.Controllers
 	[SelectionBase]
 	[RequireComponent(typeof(BoxCollider))]
 	[DefaultExecutionOrder((int)ExecutionOrder.Collider)]
-	public sealed class FakeBoxColliderController : MonoBehaviour
+	public class FakeBoxColliderController : MonoBehaviour
 	{
 		private FakeBoxCollider m_BoxCollider;
 

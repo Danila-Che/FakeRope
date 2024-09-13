@@ -1,3 +1,5 @@
+#if USE_UNITY_ENTITIES
+
 using FakePhysics.Utilities;
 using Unity.Entities;
 using UnityEngine;
@@ -42,3 +44,5 @@ namespace FakePhysics.Controllers
 		}
 	}
 }
+
+#endif

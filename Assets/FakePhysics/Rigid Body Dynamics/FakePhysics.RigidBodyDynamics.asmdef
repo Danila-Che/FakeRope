@@ -17,6 +17,12 @@
     "precompiledReferences": [],
     "autoReferenced": true,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.entities",
+            "expression": "1.0.16",
+            "define": "USE_UNITY_ENTITIES"
+        }
+    ],
     "noEngineReferences": false
 }

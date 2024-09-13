@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace FakePhysics.Controllers
 {
-	public sealed class FakeRopeCursor : MonoBehaviour, IRopeModifier
+	public class FakeRopeCursor : MonoBehaviour, IRopeModifier
 	{
 		[Flags]
 		private enum Status
