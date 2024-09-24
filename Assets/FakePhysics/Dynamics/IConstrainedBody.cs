@@ -2,6 +2,8 @@ namespace FakePhysics.Dynamics
 {
 	public interface IConstrainedBody
 	{
-		void SolveConstraints(float deltaTime);
+		void SolveInnerConstraints(float deltaTime);
+
+		void SolveOuterConstraints(float substepDeltaTime);
 	}
 }

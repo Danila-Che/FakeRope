@@ -53,7 +53,7 @@ namespace FakePhysics.SoftBodyDynamics
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static float3 CalculateBendGradient(float3 p1, float3 p2, float3 p3)
+		public static float3 CalculateBendConstraintCorrection(float3 p1, float3 p2, float3 p3)
 		{
 			var centroid = (p1 + p2 + p3) / 3f;
 

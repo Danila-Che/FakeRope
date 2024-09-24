@@ -6,12 +6,110 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Mathematics;
+using UnityEngine.Profiling;
 
 namespace FakePhysics.SoftBodyDynamics
 {
 	public class FakeRope : IDisposable, IDynamicBody, IConstrainedBody
 	{
-		[BurstCompile]
+		[BurstCompile(FloatPrecision.Low, FloatMode.Fast, DisableSafetyChecks = true)]
+		private struct BeginStepJob : IJob
+		{
+			public NativeList<FakeParticle> Particles;
+
+			public void Execute()
+			{
+				for (int i = 0; i < Particles.Length; i++)
+				{
+					var particle = Particles[i];
+
+					particle.PreviousPosition = particle.Position;
+
+					Particles[i] = particle;
+				}
+			}
+		}
+
+		[BurstCompile(FloatPrecision.Low, FloatMode.Fast, DisableSafetyChecks = true)]
+		private struct StepJob : IJob
+		{
+			public NativeList<FakeParticle> Particles;
+			public float DeltaTime;
+
+			public void Execute()
+			{
+				for (int i = 0; i < Particles.Length; i++)
+				{
+					var particle = Particles[i];
+
+					particle.Position += particle.Velocity * DeltaTime;
+
+					Particles[i] = particle;
+				}
+			}
+		}
+
+		[BurstCompile(FloatPrecision.Low, FloatMode.Fast, DisableSafetyChecks = true)]
+		private struct EndStepJob : IJob
+		{
+			public NativeList<FakeParticle> Particles;
+			public float DeltaTime;
+
+			public void Execute()
+			{
+				for (int i = 0; i < Particles.Length; i++)
+				{
+					var particle = Particles[i];
+
+					particle.Velocity = (particle.Position - particle.PreviousPosition) / DeltaTime;
+
+					Particles[i] = particle;
+				}
+			}
+		}
+
+		[BurstCompile(FloatPrecision.Low, FloatMode.Fast, DisableSafetyChecks = true)]
+		private struct ApplyAccelerationJob : IJob
+		{
+			public NativeList<FakeParticle> Particles;
+			public float3 Acceleration;
+			public float DeltaTime;
+
+			public void Execute()
+			{
+				for (int i = 0; i < Particles.Length; i++)
+				{
+					var particle = Particles[i];
+
+					particle.Velocity += Acceleration * DeltaTime;
+
+					Particles[i] = particle;
+				}
+			}
+		}
+
+		[BurstCompile(FloatPrecision.Low, FloatMode.Fast, DisableSafetyChecks = true)]
+		private struct ApplyDragJob : IJob
+		{
+			public NativeList<FakeParticle> Particles;
+			public float Drag;
+			public float DeltaTime;
+
+			public void Execute()
+			{
+				for (int i = 0; i < Particles.Length; i++)
+				{
+					var particle = Particles[i];
+
+					var drag = particle.Velocity * Drag;
+					particle.Velocity -= particle.InverseMass * DeltaTime * drag;
+
+					Particles[i] = particle;
+				}
+			}
+		}
+
+		[BurstCompile(FloatPrecision.Low, FloatMode.Fast, DisableSafetyChecks = true)]
 		private struct DistanceConstraintSolver : IJob
 		{
 			public NativeList<FakeParticle> Particles;
@@ -43,7 +141,7 @@ namespace FakePhysics.SoftBodyDynamics
 			}
 		}
 
-		[BurstCompile]
+		[BurstCompile(FloatPrecision.Low, FloatMode.Fast, DisableSafetyChecks = true)]
 		private struct BendConstraintSolver : IJob
 		{
 			public NativeList<FakeParticle> Particles;
@@ -61,7 +159,7 @@ namespace FakePhysics.SoftBodyDynamics
 					var particle1 = Particles[constraint.Index1];
 					var particle2 = Particles[constraint.Index2];
 
-					var correction = SoftBodyComputations.CalculateBendGradient(particle0.Position, particle1.Position, particle2.Position);
+					var correction = SoftBodyComputations.CalculateBendConstraintCorrection(particle0.Position, particle1.Position, particle2.Position);
 
 					var w = particle0.InverseMass + 2f * particle1.InverseMass + particle2.InverseMass;
 
@@ -80,15 +178,30 @@ namespace FakePhysics.SoftBodyDynamics
 			}
 		}
 
+		[BurstCompile(FloatPrecision.Low, FloatMode.Fast, DisableSafetyChecks = true)]
+		private struct CopyParticles : IJob
+		{
+			public NativeList<FakeParticle> Particles;
+			[ReadOnly]
+			public NativeArray<FakeParticle> EdgeParticles;
+
+			public void Execute()
+			{
+				Particles[0] = EdgeParticles[0];
+				Particles[^1] = EdgeParticles[1];
+			}
+		}
+
 		private readonly FakeJoint m_FakeJoint;
 		private readonly RopeArgs m_RopeArgs;
 
 		private NativeList<FakeParticle> m_Particles;
+		private NativeArray<FakeParticle> m_EdgeParticles;
 		private NativeList<FakeDistanceConstraint> m_DistanceConstraints;
 		private NativeList<FakeBendConstraint> m_BendConstraints;
 
 		private bool m_IsDisposed;
-		private JobHandle m_Job;
+		private JobHandle m_Dependency;
 
 		public FakeRope(FakeJoint fakeJoint, RopeArgs ropeArgs)
 		{
@@ -96,6 +209,7 @@ namespace FakePhysics.SoftBodyDynamics
 			m_RopeArgs = ropeArgs;
 
 			m_Particles = new NativeList<FakeParticle>(Allocator.Persistent);
+			m_EdgeParticles = new NativeArray<FakeParticle>(2, Allocator.Persistent);
 			m_DistanceConstraints = new NativeList<FakeDistanceConstraint>(Allocator.Persistent);
 			m_BendConstraints = new NativeList<FakeBendConstraint>(Allocator.Persistent);
 
@@ -106,7 +220,7 @@ namespace FakePhysics.SoftBodyDynamics
 		{
 			get
 			{
-				m_Job.Complete();
+				m_Dependency.Complete();
 				return m_Particles.AsParallelReader();
 			}
 		}
@@ -123,11 +237,16 @@ namespace FakePhysics.SoftBodyDynamics
 
 		public void Dispose()
 		{
-			m_Job.Complete();
+			m_Dependency.Complete();
 
 			if (m_Particles.IsCreated)
 			{
 				m_Particles.Dispose();
+			}
+
+			if (m_EdgeParticles.IsCreated)
+			{
+				m_EdgeParticles.Dispose();
 			}
 
 			if (m_DistanceConstraints.IsCreated)
@@ -147,57 +266,89 @@ namespace FakePhysics.SoftBodyDynamics
 		{
 			CheckDisposed();
 
-			for (int i = 0; i < m_Particles.Length; i++)
+			m_Dependency.Complete();
+
+			m_Dependency = new BeginStepJob()
 			{
-				var particle = m_Particles[i];
-
-				particle.PreviousPosition = particle.Position;
-
-				m_Particles[i] = particle;
-			}
+				Particles = m_Particles,
+			}.Schedule(m_Dependency);
 		}
 
 		public void Step(float deltaTime)
 		{
 			CheckDisposed();
 
-			for (int i = 0; i < m_Particles.Length; i++)
+			m_Dependency = new StepJob()
 			{
-				var particle = m_Particles[i];
-
-				particle.Position += particle.Velocity * deltaTime;
-
-				m_Particles[i] = particle;
-			}
+				Particles = m_Particles,
+				DeltaTime = deltaTime,
+			}.Schedule(m_Dependency);
 		}
 
 		public void EndStep(float deltaTime)
 		{
 			CheckDisposed();
 
-			for (int i = 0; i < m_Particles.Length; i++)
+			m_Dependency = new EndStepJob()
 			{
-				var particle = m_Particles[i];
-
-				particle.Velocity = (particle.Position - particle.PreviousPosition) / deltaTime;
-
-				m_Particles[i] = particle;
-			}
+				Particles = m_Particles,
+				DeltaTime = deltaTime,
+			}.Schedule(m_Dependency);
 		}
 
-		public void SolveConstraints(float deltaTime)
+		public void SolveInnerConstraints(float deltaTime)
 		{
 			CheckDisposed();
 
-			m_Job.Complete();
-
-			if (m_FakeJoint == null)
+			if (m_RopeArgs.NeedBendConstraint)
 			{
-				SolveConstraintsWithoutBodies();
+				m_Dependency = new BendConstraintSolver
+				{
+					Particles = m_Particles,
+					BendConstraints = m_BendConstraints,
+					Stiffness = m_RopeArgs.Stiffness,
+				}.Schedule(m_Dependency);
 			}
-			else
+
+			if (m_RopeArgs.NeedDistanceConstraint)
 			{
-				SolveConstraintsWithBodies(deltaTime);
+				m_Dependency = new DistanceConstraintSolver
+				{
+					Particles = m_Particles,
+					DistanceConstraints = m_DistanceConstraints,
+				}.Schedule(m_Dependency);
+			}
+		}
+
+		public void SolveOuterConstraints(float deltaTime)
+		{
+			CheckDisposed();
+
+			if (m_RopeArgs.NeedDistanceConstraint)
+			{
+				Profiler.BeginSample("Recalculate Global Poses");
+
+				m_FakeJoint.RecalculateGlobalPoses();
+
+				Profiler.EndSample();
+
+				m_Dependency.Complete();
+
+				Profiler.BeginSample("Attachment Constraint");
+
+				SolveAttachmentConstraint(
+					particleIndex: 0,
+					m_FakeJoint.TargetBody,
+					m_FakeJoint.TargetGlobalPose.Position,
+					deltaTime);
+
+				SolveAttachmentConstraint(
+					m_Particles.Length - 1,
+					m_FakeJoint.AnchorBody,
+					m_FakeJoint.AnchorGlobalPose.Position,
+					deltaTime);
+
+				Profiler.EndSample();
 			}
 		}
 
@@ -205,34 +356,31 @@ namespace FakePhysics.SoftBodyDynamics
 		{
 			CheckDisposed();
 
-			for (int i = 0; i < m_Particles.Length; i++)
+			m_Dependency = new ApplyAccelerationJob()
 			{
-				var particle = m_Particles[i];
-
-				particle.Velocity += acceleration * deltaTime;
-
-				m_Particles[i] = particle;
-			}
+				Particles = m_Particles,
+				DeltaTime = deltaTime,
+				Acceleration = acceleration,
+			}.Schedule(m_Dependency);
 		}
 
 		public void ApplyDrag(float deltaTime)
 		{
 			CheckDisposed();
 
-			for (int i = 0; i < m_Particles.Length; i++)
+			m_Dependency = new ApplyDragJob()
 			{
-				var particle = m_Particles[i];
-
-				var drag = particle.Velocity * m_RopeArgs.Drag;
-				particle.Velocity -= particle.InverseMass * deltaTime * drag;
-
-				m_Particles[i] = particle;
-			}
+				Particles = m_Particles,
+				DeltaTime = deltaTime,
+				Drag = m_RopeArgs.Drag,
+			}.Schedule(m_Dependency);
 		}
 
 		public void ChangeLength(float lengthDelta)
 		{
 			CheckDisposed();
+
+			m_Dependency.Complete();
 
 			var constraint = m_DistanceConstraints[^1];
 			var distance = constraint.Distance + lengthDelta;
@@ -292,67 +440,6 @@ namespace FakePhysics.SoftBodyDynamics
 			if (m_IsDisposed)
 			{
 				throw new ObjectDisposedException(GetType().Name);
-			}
-		}
-
-
-		private void SolveConstraintsWithoutBodies()
-		{
-			if (m_RopeArgs.NeedBendConstraint)
-			{
-				m_Job = new BendConstraintSolver
-				{
-					Particles = m_Particles,
-					BendConstraints = m_BendConstraints,
-					Stiffness = m_RopeArgs.Stiffness,
-				}.Schedule(m_Job);
-			}
-
-			if (m_RopeArgs.NeedDistanceConstraint)
-			{
-				m_Job = new DistanceConstraintSolver
-				{
-					Particles = m_Particles,
-					DistanceConstraints = m_DistanceConstraints,
-				}.Schedule(m_Job);
-			}
-		}
-
-		private void SolveConstraintsWithBodies(float deltaTime)
-		{
-			m_FakeJoint.RecalculateGlobalPoses();
-
-			if (m_RopeArgs.NeedBendConstraint)
-			{
-				m_Job = new BendConstraintSolver
-				{
-					Particles = m_Particles,
-					BendConstraints = m_BendConstraints,
-					Stiffness = m_RopeArgs.Stiffness,
-				}.Schedule();
-				m_Job.Complete();
-			}
-
-			if (m_RopeArgs.NeedDistanceConstraint)
-			{
-				SolveOuterConstraint(
-					particleIndex: 0,
-					m_FakeJoint.TargetBody,
-					m_FakeJoint.TargetGlobalPose.Position,
-					deltaTime);
-
-				m_Job = new DistanceConstraintSolver
-				{
-					Particles = m_Particles,
-					DistanceConstraints = m_DistanceConstraints,
-				}.Schedule();
-				m_Job.Complete();
-
-				SolveOuterConstraint(
-					m_Particles.Length - 1,
-					m_FakeJoint.AnchorBody,
-					m_FakeJoint.AnchorGlobalPose.Position,
-					deltaTime);
 			}
 		}
 
@@ -417,10 +504,10 @@ namespace FakePhysics.SoftBodyDynamics
 			m_BendConstraints.RemoveLastElement();
 		}
 
-		private void SolveOuterConstraint(int particleIndex, FakeRigidBody body, float3 globalPosition, float deltaTime)
+		private void SolveAttachmentConstraint(int particleIndex, FakeRigidBody body, float3 globalPosition, float deltaTime)
 		{
 			var particle = m_Particles[particleIndex];
-			var correction = Computations.CalculateGradient(particle.Position, globalPosition);
+			var correction = Computations.CalculateCorrection(particle.Position, globalPosition);
 
 			if (body.IsKinematic)
 			{

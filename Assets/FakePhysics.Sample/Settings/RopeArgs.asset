@@ -15,7 +15,7 @@ MonoBehaviour:
   m_SpanDistance: 0.25
   m_Drag: 0
   m_Density: 7800
-  m_Radius: 0.001
+  m_Radius: 0.01
   m_Stiffness: 0.1
   m_NeedDistanceConstraint: 1
   m_NeedBendConstraint: 1

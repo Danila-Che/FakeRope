@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Unity.Entities;
 using Unity.Mathematics;
+using UnityEngine.Profiling;
 
 namespace FakePhysics.Dynamics
 {
@@ -134,26 +135,54 @@ namespace FakePhysics.Dynamics
 
 			for (int substep = 0; substep < m_SolverArgs.SubstepIteractionsNumber; substep++)
 			{
-				for (int i = 0; i < m_DynamicBodies.Count; i++)
-				{
-					m_DynamicBodies[i].BeginStep();
-				}
-
-				SolveFriction(substepDeltaTime);
-				SolveDynamics(substepDeltaTime);
-				SolveConstraints(substepDeltaTime);
+				BeginStep();
+				Iterate(substepDeltaTime);
 				m_Contacts.Clear();
-				SolveCollisions(substepDeltaTime);
-
-				for (int i = 0; i < m_DynamicBodies.Count; i++)
-				{
-					m_DynamicBodies[i].EndStep(substepDeltaTime);
-				}
+				SolveCollisions(deltaTime);
+				EndStep(substepDeltaTime);
 			}
+		}
+
+		private void BeginStep()
+		{
+			Profiler.BeginSample("Begin Step");
+
+			for (int i = 0; i < m_DynamicBodies.Count; i++)
+			{
+				m_DynamicBodies[i].BeginStep();
+			}
+
+			Profiler.EndSample();
+		}
+
+		private void Iterate(float deltaTime)
+		{
+			Profiler.BeginSample("Step");
+
+			SolveFriction(deltaTime);
+			SolveDynamics(deltaTime);
+			SolveInnerConstraints(deltaTime);
+			SolveOuterConstraints(deltaTime);
+
+			Profiler.EndSample();
+		}
+
+		private void EndStep(float deltaTime)
+		{
+			Profiler.BeginSample("End Step");
+
+			for (int i = 0; i < m_DynamicBodies.Count; i++)
+			{
+				m_DynamicBodies[i].EndStep(deltaTime);
+			}
+
+			Profiler.EndSample();
 		}
 
 		private void SolveFriction(float deltaTime)
 		{
+			Profiler.BeginSample("Friction");
+
 			for (int i = 0; i < m_Contacts.Count; i++)
 			{
 				var contact = m_Contacts[i];
@@ -176,33 +205,62 @@ namespace FakePhysics.Dynamics
 				contact.Body0?.ApplyCorrection(limit * contact.DeltaVDirection, contact.Point, true);
 				contact.Body1?.ApplyCorrection(-limit * contact.DeltaVDirection, contact.Point, true);
 			}
+
+			Profiler.EndSample();
 		}
 
 		private void SolveDynamics(float deltaTime)
 		{
+			Profiler.BeginSample("Dynamics");
+
 			for (int i = 0; i < m_DynamicBodies.Count; i++)
 			{
 				m_DynamicBodies[i].ApplyAcceleration(deltaTime, m_SolverArgs.GravitationalAcceleration);
 				m_DynamicBodies[i].ApplyDrag(deltaTime);
 				m_DynamicBodies[i].Step(deltaTime);
 			}
+
+			Profiler.EndSample();
 		}
 
-		private void SolveConstraints(float deltaTime)
+		private void SolveInnerConstraints(float deltaTime)
 		{
+			Profiler.BeginSample("Inner Constraints");
+
 			var substepDeltaTime = deltaTime / m_SolverArgs.SolvePositionIteractionsNumber;
 
 			for (int substep = 0; substep < m_SolverArgs.SolvePositionIteractionsNumber; substep++)
 			{
 				for (int i = 0; i < m_ConstrainedBodies.Count; i++)
 				{
-					m_ConstrainedBodies[i].SolveConstraints(substepDeltaTime);
+					m_ConstrainedBodies[i].SolveInnerConstraints(substepDeltaTime);
 				}
 			}
+
+			Profiler.EndSample();
+		}
+
+		private void SolveOuterConstraints(float deltaTime)
+		{
+			Profiler.BeginSample("Outer Constraints");
+
+			var substepDeltaTime = deltaTime / m_SolverArgs.SolvePositionIteractionsNumber;
+
+			for (int substep = 0; substep < m_SolverArgs.SolvePositionIteractionsNumber; substep++)
+			{
+				for (int i = 0; i < m_ConstrainedBodies.Count; i++)
+				{
+					m_ConstrainedBodies[i].SolveOuterConstraints(substepDeltaTime);
+				}
+			}
+
+			Profiler.EndSample();
 		}
 
 		private void SolveCollisions(float deltaTime)
 		{
+			Profiler.BeginSample("Collisions");
+
 			//var substepDeltaTime = deltaTime / m_SolverArgs.SolverCollisionIteractionNumber;
 			var hasCollisions = true;
 
@@ -229,6 +287,8 @@ namespace FakePhysics.Dynamics
 					}
 				}
 			}
+
+			Profiler.EndSample();
 		}
 
 		private bool SolveCollisions(ICollidingBody body0, ICollidingBody body1, float deltaTime)

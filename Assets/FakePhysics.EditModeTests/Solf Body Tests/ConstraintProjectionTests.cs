@@ -52,7 +52,7 @@ namespace FakePhysics.EditModeTests
 
 			var n = new float3(-4f / 3f, 0f, 0f);
 
-			Assert.That(SoftBodyComputations.CalculateBendGradient(p1, p2, p3), Is.EqualTo(n).Using(new Float3Comparer()));
+			Assert.That(SoftBodyComputations.CalculateBendConstraintCorrection(p1, p2, p3), Is.EqualTo(n).Using(new Float3Comparer()));
 		}
 	}
 }

@@ -30,7 +30,7 @@ namespace FakePhysics.Utilities
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static float3 CalculateGradient(float3 p1, float3 p2)
+		public static float3 CalculateCorrection(float3 p1, float3 p2)
 		{
 			return p1 - p2;
 		}
