@@ -10,7 +10,7 @@ namespace FakePhysics.Dynamics
 		[SerializeField] private float3 m_GravitationalAcceleration = Physics.gravity;
 		[Min(0f)]
 		[SerializeField] private float m_Compliance = 0f;
-		[Range(0f, 1f)]
+		[Min(0f)]
 		[SerializeField] private float m_Friction = 0.5f;
 		[Min(1)]
 		[SerializeField] private int m_SubstepIteractionsNumber = 1;

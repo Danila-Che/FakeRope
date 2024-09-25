@@ -12,6 +12,12 @@ namespace FakePhysics.Controllers
 	[DefaultExecutionOrder((int)ExecutionOrder.SoftBody)]
 	public class FakeRopeController : MonoBehaviour
 	{
+		private enum RopeMode
+		{
+			Simulation,
+			Visualisation,
+		}
+
 		[Header("First Body")]
 		[SerializeField] private FakeRigidBodyController m_AnchorBody;
 		[SerializeField] private float3 m_AnchorLocalAttachement;
@@ -21,6 +27,7 @@ namespace FakePhysics.Controllers
 		[SerializeField] private float3 m_TargetLocalAttachement;
 
 		[Header("Settings")]
+		[SerializeField] private RopeMode m_Mode = RopeMode.Simulation;
 		[SerializeField] private RopeSettings m_RopeSettings;
 
 		private FakeRope m_Rope;
@@ -33,7 +40,11 @@ namespace FakePhysics.Controllers
 		{
 			m_FakeSolverController = GetComponentInParent<FakeSolverController>();
 
-			m_Rope = new FakeRope(CreateJoint(), m_RopeSettings.Args);
+			m_Rope = new FakeRope(CreateJoint(), m_RopeSettings.Args)
+			{
+				NeedOuterConstraints = m_Mode is RopeMode.Simulation
+			};
+
 			m_Rope.CreateFromJoint();
 
 			m_Renderer = GetComponent<IRenderer>();

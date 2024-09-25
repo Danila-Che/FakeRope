@@ -142,6 +142,24 @@ namespace FakePhysics.SoftBodyDynamics
 		}
 
 		[BurstCompile(FloatPrecision.Low, FloatMode.Fast, DisableSafetyChecks = true)]
+		private struct AttachmentConstraintSolver : IJob
+		{
+			public NativeList<FakeParticle> Particles;
+			public Index ParticleIndex;
+			public float3 GlobalPosition;
+
+			public void Execute()
+			{
+				var particle = Particles[ParticleIndex];
+
+				var correction = Computations.CalculateCorrection(particle.Position, GlobalPosition);
+				particle.Position -= correction;
+
+				Particles[ParticleIndex] = particle;
+			}
+		}
+
+		[BurstCompile(FloatPrecision.Low, FloatMode.Fast, DisableSafetyChecks = true)]
 		private struct BendConstraintSolver : IJob
 		{
 			public NativeList<FakeParticle> Particles;
@@ -178,19 +196,7 @@ namespace FakePhysics.SoftBodyDynamics
 			}
 		}
 
-		[BurstCompile(FloatPrecision.Low, FloatMode.Fast, DisableSafetyChecks = true)]
-		private struct CopyParticles : IJob
-		{
-			public NativeList<FakeParticle> Particles;
-			[ReadOnly]
-			public NativeArray<FakeParticle> EdgeParticles;
-
-			public void Execute()
-			{
-				Particles[0] = EdgeParticles[0];
-				Particles[^1] = EdgeParticles[1];
-			}
-		}
+		public bool NeedOuterConstraints = true;
 
 		private readonly FakeJoint m_FakeJoint;
 		private readonly RopeArgs m_RopeArgs;
@@ -312,11 +318,33 @@ namespace FakePhysics.SoftBodyDynamics
 
 			if (m_RopeArgs.NeedDistanceConstraint)
 			{
+				if (NeedOuterConstraints is false)
+				{
+					m_FakeJoint.RecalculateGlobalPoses();
+
+					m_Dependency = new AttachmentConstraintSolver
+					{
+						Particles = m_Particles,
+						ParticleIndex = 0,
+						GlobalPosition = m_FakeJoint.TargetGlobalPose.Position,
+					}.Schedule(m_Dependency);
+				}
+
 				m_Dependency = new DistanceConstraintSolver
 				{
 					Particles = m_Particles,
 					DistanceConstraints = m_DistanceConstraints,
 				}.Schedule(m_Dependency);
+
+				if (NeedOuterConstraints is false)
+				{
+					m_Dependency = new AttachmentConstraintSolver
+					{
+						Particles = m_Particles,
+						ParticleIndex = ^1,
+						GlobalPosition = m_FakeJoint.AnchorGlobalPose.Position,
+					}.Schedule(m_Dependency);
+				}
 			}
 		}
 
@@ -324,31 +352,34 @@ namespace FakePhysics.SoftBodyDynamics
 		{
 			CheckDisposed();
 
-			if (m_RopeArgs.NeedDistanceConstraint)
+			if (NeedOuterConstraints)
 			{
-				Profiler.BeginSample("Recalculate Global Poses");
+				if (m_RopeArgs.NeedDistanceConstraint)
+				{
+					Profiler.BeginSample("Recalculate Global Poses");
 
-				m_FakeJoint.RecalculateGlobalPoses();
+					m_FakeJoint.RecalculateGlobalPoses();
 
-				Profiler.EndSample();
+					Profiler.EndSample();
 
-				m_Dependency.Complete();
+					m_Dependency.Complete();
 
-				Profiler.BeginSample("Attachment Constraint");
+					Profiler.BeginSample("Attachment Constraint");
 
-				SolveAttachmentConstraint(
-					particleIndex: 0,
-					m_FakeJoint.TargetBody,
-					m_FakeJoint.TargetGlobalPose.Position,
-					deltaTime);
+					SolveAttachmentConstraint(
+						particleIndex: 0,
+						m_FakeJoint.TargetBody,
+						m_FakeJoint.TargetGlobalPose.Position,
+						deltaTime);
 
-				SolveAttachmentConstraint(
-					m_Particles.Length - 1,
-					m_FakeJoint.AnchorBody,
-					m_FakeJoint.AnchorGlobalPose.Position,
-					deltaTime);
+					SolveAttachmentConstraint(
+						particleIndex: ^1,
+						m_FakeJoint.AnchorBody,
+						m_FakeJoint.AnchorGlobalPose.Position,
+						deltaTime);
 
-				Profiler.EndSample();
+					Profiler.EndSample();
+				}
 			}
 		}
 
@@ -504,7 +535,7 @@ namespace FakePhysics.SoftBodyDynamics
 			m_BendConstraints.RemoveLastElement();
 		}
 
-		private void SolveAttachmentConstraint(int particleIndex, FakeRigidBody body, float3 globalPosition, float deltaTime)
+		private void SolveAttachmentConstraint(Index particleIndex, FakeRigidBody body, float3 globalPosition, float deltaTime)
 		{
 			var particle = m_Particles[particleIndex];
 			var correction = Computations.CalculateCorrection(particle.Position, globalPosition);
