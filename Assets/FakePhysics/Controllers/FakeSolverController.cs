@@ -67,22 +67,32 @@ namespace FakePhysics.Controllers
 			m_Solver.Add((ICollidingBody)body);
 		}
 
-		public void UnregisterRigidBody(FakeRigidBody body)
-		{
-			m_Solver.Remove((IDynamicBody)body);
-			m_Solver.Remove((ICollidingBody)body);
-		}
-
 		public void RegisterSolfBody(FakeRope body)
 		{
 			m_Solver.Add((IDynamicBody)body);
 			m_Solver.Add((IConstrainedBody)body);
 		}
 
+		public void RegisterSolfBody(FakeAttachmentConstraint constraint)
+		{
+			m_Solver.Add(constraint);
+		}
+
+		public void UnregisterRigidBody(FakeRigidBody body)
+		{
+			m_Solver.Remove((IDynamicBody)body);
+			m_Solver.Remove((ICollidingBody)body);
+		}
+
 		public void UnregisterSolfBody(FakeRope body)
 		{
 			m_Solver.Remove((IDynamicBody)body);
 			m_Solver.Remove((IConstrainedBody)body);
+		}
+
+		public void UnregisterSolfBody(FakeAttachmentConstraint constraint)
+		{
+			m_Solver.Remove(constraint);
 		}
 	}
 }

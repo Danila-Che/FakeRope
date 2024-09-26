@@ -4,6 +4,6 @@ namespace FakePhysics.Dynamics
 	{
 		void SolveInnerConstraints(float deltaTime);
 
-		void SolveOuterConstraints(float substepDeltaTime);
+		void SolveOuterConstraints(float deltaTime);
 	}
 }

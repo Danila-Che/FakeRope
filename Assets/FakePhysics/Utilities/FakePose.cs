@@ -40,6 +40,11 @@ namespace FakePhysics.Utilities
 			return (int)Computations.Hash(this);
 		}
 
+		public static implicit operator FakePose(float3 position)
+		{
+			return new FakePose(position);
+		}
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public override string ToString()
 		{

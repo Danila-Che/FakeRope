@@ -197,6 +197,7 @@ namespace FakePhysics.SoftBodyDynamics
 		}
 
 		public bool NeedOuterConstraints = true;
+		public bool SeparateInnerAndOuterConstraints = true;
 
 		private readonly FakeJoint m_FakeJoint;
 		private readonly RopeArgs m_RopeArgs;
@@ -306,18 +307,13 @@ namespace FakePhysics.SoftBodyDynamics
 		{
 			CheckDisposed();
 
-			if (m_RopeArgs.NeedBendConstraint)
-			{
-				m_Dependency = new BendConstraintSolver
-				{
-					Particles = m_Particles,
-					BendConstraints = m_BendConstraints,
-					Stiffness = m_RopeArgs.Stiffness,
-				}.Schedule(m_Dependency);
-			}
-
 			if (m_RopeArgs.NeedDistanceConstraint)
 			{
+				if (SeparateInnerAndOuterConstraints is false)
+				{
+					SolveAttachmentConstraints(deltaTime);
+				}
+
 				if (NeedOuterConstraints is false)
 				{
 					m_FakeJoint.RecalculateGlobalPoses();
@@ -346,39 +342,27 @@ namespace FakePhysics.SoftBodyDynamics
 					}.Schedule(m_Dependency);
 				}
 			}
+			
+			if (m_RopeArgs.NeedBendConstraint)
+			{
+				m_Dependency = new BendConstraintSolver
+				{
+					Particles = m_Particles,
+					BendConstraints = m_BendConstraints,
+					Stiffness = m_RopeArgs.Stiffness,
+				}.Schedule(m_Dependency);
+			}
 		}
 
 		public void SolveOuterConstraints(float deltaTime)
 		{
 			CheckDisposed();
 
-			if (NeedOuterConstraints)
+			if (SeparateInnerAndOuterConstraints && NeedOuterConstraints)
 			{
 				if (m_RopeArgs.NeedDistanceConstraint)
 				{
-					Profiler.BeginSample("Recalculate Global Poses");
-
-					m_FakeJoint.RecalculateGlobalPoses();
-
-					Profiler.EndSample();
-
-					m_Dependency.Complete();
-
-					Profiler.BeginSample("Attachment Constraint");
-
-					SolveAttachmentConstraint(
-						particleIndex: 0,
-						m_FakeJoint.TargetBody,
-						m_FakeJoint.TargetGlobalPose.Position,
-						deltaTime);
-
-					SolveAttachmentConstraint(
-						particleIndex: ^1,
-						m_FakeJoint.AnchorBody,
-						m_FakeJoint.AnchorGlobalPose.Position,
-						deltaTime);
-
-					Profiler.EndSample();
+					SolveAttachmentConstraints(deltaTime);
 				}
 			}
 		}
@@ -533,6 +517,33 @@ namespace FakePhysics.SoftBodyDynamics
 			m_Particles.RemoveLastElement();
 			m_DistanceConstraints.RemoveLastElement();
 			m_BendConstraints.RemoveLastElement();
+		}
+
+		private void SolveAttachmentConstraints(float deltaTime)
+		{
+			Profiler.BeginSample("Recalculate Global Poses");
+
+			m_FakeJoint.RecalculateGlobalPoses();
+
+			Profiler.EndSample();
+
+			m_Dependency.Complete();
+
+			Profiler.BeginSample("Attachment Constraint");
+
+			SolveAttachmentConstraint(
+				particleIndex: 0,
+				m_FakeJoint.TargetBody,
+				m_FakeJoint.TargetGlobalPose.Position,
+				deltaTime);
+
+			SolveAttachmentConstraint(
+				particleIndex: ^1,
+				m_FakeJoint.AnchorBody,
+				m_FakeJoint.AnchorGlobalPose.Position,
+				deltaTime);
+
+			Profiler.EndSample();
 		}
 
 		private void SolveAttachmentConstraint(Index particleIndex, FakeRigidBody body, float3 globalPosition, float deltaTime)
