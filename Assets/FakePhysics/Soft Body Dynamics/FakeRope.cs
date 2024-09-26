@@ -196,8 +196,17 @@ namespace FakePhysics.SoftBodyDynamics
 			}
 		}
 
+		public enum RopeMode
+		{
+			Visualisation,
+			SequentialSimulation,
+			ParallelSimulation,
+		}
+
 		public bool NeedOuterConstraints = true;
 		public bool SeparateInnerAndOuterConstraints = true;
+
+		public RopeMode Mode;
 
 		private readonly FakeJoint m_FakeJoint;
 		private readonly RopeArgs m_RopeArgs;
@@ -307,15 +316,19 @@ namespace FakePhysics.SoftBodyDynamics
 		{
 			CheckDisposed();
 
-			if (m_RopeArgs.NeedDistanceConstraint)
+			switch (Mode)
 			{
-				if (SeparateInnerAndOuterConstraints is false)
-				{
-					SolveAttachmentConstraints(deltaTime);
-				}
+				case RopeMode.Visualisation:
+					if (m_RopeArgs.NeedBendConstraint)
+					{
+						m_Dependency = new BendConstraintSolver
+						{
+							Particles = m_Particles,
+							BendConstraints = m_BendConstraints,
+							Stiffness = m_RopeArgs.Stiffness,
+						}.Schedule(m_Dependency);
+					}
 
-				if (NeedOuterConstraints is false)
-				{
 					m_FakeJoint.RecalculateGlobalPoses();
 
 					m_Dependency = new AttachmentConstraintSolver
@@ -324,33 +337,55 @@ namespace FakePhysics.SoftBodyDynamics
 						ParticleIndex = 0,
 						GlobalPosition = m_FakeJoint.TargetGlobalPose.Position,
 					}.Schedule(m_Dependency);
-				}
 
-				m_Dependency = new DistanceConstraintSolver
-				{
-					Particles = m_Particles,
-					DistanceConstraints = m_DistanceConstraints,
-				}.Schedule(m_Dependency);
+					m_Dependency = new DistanceConstraintSolver
+					{
+						Particles = m_Particles,
+						DistanceConstraints = m_DistanceConstraints,
+					}.Schedule(m_Dependency);
 
-				if (NeedOuterConstraints is false)
-				{
 					m_Dependency = new AttachmentConstraintSolver
 					{
 						Particles = m_Particles,
 						ParticleIndex = ^1,
 						GlobalPosition = m_FakeJoint.AnchorGlobalPose.Position,
 					}.Schedule(m_Dependency);
-				}
-			}
-			
-			if (m_RopeArgs.NeedBendConstraint)
-			{
-				m_Dependency = new BendConstraintSolver
-				{
-					Particles = m_Particles,
-					BendConstraints = m_BendConstraints,
-					Stiffness = m_RopeArgs.Stiffness,
-				}.Schedule(m_Dependency);
+
+					break;
+
+				case RopeMode.SequentialSimulation:
+					SolveAttachmentConstraints(deltaTime);
+
+					m_Dependency = new DistanceConstraintSolver
+					{
+						Particles = m_Particles,
+						DistanceConstraints = m_DistanceConstraints,
+					}.Schedule(m_Dependency);
+
+					m_Dependency = new BendConstraintSolver
+					{
+						Particles = m_Particles,
+						BendConstraints = m_BendConstraints,
+						Stiffness = m_RopeArgs.Stiffness,
+					}.Schedule(m_Dependency);
+
+					break;
+
+				case RopeMode.ParallelSimulation:
+					m_Dependency = new DistanceConstraintSolver
+					{
+						Particles = m_Particles,
+						DistanceConstraints = m_DistanceConstraints,
+					}.Schedule(m_Dependency);
+
+					m_Dependency = new BendConstraintSolver
+					{
+						Particles = m_Particles,
+						BendConstraints = m_BendConstraints,
+						Stiffness = m_RopeArgs.Stiffness,
+					}.Schedule(m_Dependency);
+
+					break;
 			}
 		}
 
@@ -358,7 +393,7 @@ namespace FakePhysics.SoftBodyDynamics
 		{
 			CheckDisposed();
 
-			if (SeparateInnerAndOuterConstraints && NeedOuterConstraints)
+			if (Mode is RopeMode.ParallelSimulation)
 			{
 				if (m_RopeArgs.NeedDistanceConstraint)
 				{
