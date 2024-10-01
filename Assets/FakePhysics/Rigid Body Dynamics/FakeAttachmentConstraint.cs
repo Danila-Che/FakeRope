@@ -12,9 +12,7 @@ namespace FakePhysics.RigidBodyDynamics
 			m_FakeJoint = fakeJoint;
 		}
 
-		public void SolveInnerConstraints(float deltaTime) { }
-
-		public void SolveOuterConstraints(float deltaTime)
+		public void SolveInnerConstraints(float deltaTime)
 		{
 			m_FakeJoint.RecalculateGlobalPoses();
 
@@ -29,5 +27,7 @@ namespace FakePhysics.RigidBodyDynamics
 				m_FakeJoint.AnchorGlobalPose.Position,
 				m_FakeJoint.TargetGlobalPose.Position);
 		}
+
+		public void SolveOuterConstraints(float deltaTime) { }
 	}
 }

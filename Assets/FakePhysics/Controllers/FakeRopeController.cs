@@ -30,6 +30,8 @@ namespace FakePhysics.Controllers
 
 		private FakeSolverController m_FakeSolverController;
 
+		public float Length => m_Rope.Length;
+
 		private void OnEnable()
 		{
 			m_FakeSolverController = GetComponentInParent<FakeSolverController>();
@@ -110,6 +112,11 @@ namespace FakePhysics.Controllers
 		}
 
 #endif
+
+		public void SetLength(float length)
+		{
+			m_Rope.ChangeLength(length - m_Rope.Length);
+		}
 
 		private FakeJoint CreateJoint()
 		{

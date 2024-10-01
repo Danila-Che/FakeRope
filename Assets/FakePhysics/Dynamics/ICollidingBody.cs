@@ -8,6 +8,8 @@ namespace FakePhysics.Dynamics
 	{
 		bool IsKinematic { get; }
 
+		bool IsTrigger { get; set; }
+
 		FakePose Pose { get; }
 
 		FakeBoxCollider BoxCollider { get; }

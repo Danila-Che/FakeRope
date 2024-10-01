@@ -274,9 +274,13 @@ namespace FakePhysics.Dynamics
 				{
 					var body0 = m_CollidingBodies[i];
 
+					if (body0.IsTrigger) { continue; }
+
 					for (int j = i + 1; j < m_CollidingBodies.Count; j++)
 					{
 						var body1 = m_CollidingBodies[j];
+
+						if (body1.IsTrigger) { continue; }
 
 						if (body0.IsKinematic && body1.IsKinematic)
 						{

@@ -18,4 +18,4 @@ MonoBehaviour:
   m_Radius: 0.01
   m_Stiffness: 0.1
   m_NeedDistanceConstraint: 1
-  m_NeedBendConstraint: 1
+  m_NeedBendConstraint: 0

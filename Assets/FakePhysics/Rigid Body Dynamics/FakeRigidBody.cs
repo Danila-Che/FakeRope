@@ -11,7 +11,7 @@ namespace FakePhysics.RigidBodyDynamics
 		private const float k_MaxRotationPerSubstep = 0.5f;
 
 		private readonly bool m_IsKinematic;
-		private readonly FakeBoxCollider m_BoxCollider;
+		private FakeBoxCollider m_BoxCollider;
 
 		private FakePose m_Pose;
 		private FakePose m_PreviousPose;
@@ -76,6 +76,8 @@ namespace FakePhysics.RigidBodyDynamics
 		}
 
 		public bool IsKinematic => m_IsKinematic;
+
+		public bool IsTrigger { get => m_BoxCollider.IsTrigger; set => m_BoxCollider.IsTrigger = value; }
 
 		public FakePose Pose => m_Pose;
 

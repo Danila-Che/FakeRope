@@ -5,9 +5,11 @@ using UnityEngine;
 
 namespace FakePhysics.CollisionDetection
 {
-	public readonly struct FakeBoxCollider
+	public struct FakeBoxCollider
 	{
 		public const int k_BoxVerticesCount = 8;
+
+		public bool IsTrigger;
 
 		public readonly BoxCollider UnityBoxCollider;
 		public readonly float3[] WorldVertices;
@@ -18,12 +20,15 @@ namespace FakePhysics.CollisionDetection
 		public FakeBoxCollider(BoxCollider unityBoxCollider)
 			: this(unityBoxCollider.WorldSize())
 		{
+			IsTrigger = unityBoxCollider.isTrigger;
+
 			UnityBoxCollider = unityBoxCollider;
 		}
 
 		public FakeBoxCollider(float3 size)
 		{
 			UnityBoxCollider = null;
+			IsTrigger = true;
 			m_HalfSize = 0.5f * size;
 
 			m_Vertices = new float3[k_BoxVerticesCount];
