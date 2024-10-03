@@ -231,6 +231,43 @@ namespace FakePhysics.RigidBodyDynamics
 			}
 		}
 
+		public void ApplyCorrectionRaw(float3 correction, float3? position = null, bool velocityLevel = false)
+		{
+			if (m_IsKinematic) { return; }
+
+			float3 deltaQuaternion;
+			if (position == null)
+			{
+				deltaQuaternion = correction;
+			}
+			else
+			{
+				if (velocityLevel)
+				{
+					m_Velocity += correction;
+				}
+				else
+				{
+					m_Pose = Computations.Translate(m_Pose, correction);
+				}
+
+				deltaQuaternion = math.cross(position.Value - m_Pose.Position, correction);
+			}
+
+			deltaQuaternion = Computations.InverseRotate(m_Pose, deltaQuaternion);
+			deltaQuaternion *= m_InverseInertiaTensor;
+			deltaQuaternion = Computations.Rotate(m_Pose, deltaQuaternion);
+
+			if (velocityLevel)
+			{
+				m_AngularVelocity += deltaQuaternion;
+			}
+			else
+			{
+				ApplyRotation(deltaQuaternion);
+			}
+		}
+
 		private void ApplyRotation(float3 rotation, float scale = 1f)
 		{
 			var phi = math.length(rotation);

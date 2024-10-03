@@ -1,3 +1,4 @@
+using System;
 using Unity.Mathematics;
 
 namespace FakePhysics.SoftBodyDynamics
@@ -9,8 +10,10 @@ namespace FakePhysics.SoftBodyDynamics
 		private readonly float m_Density = 7800f;
 		private readonly float m_Radius = 0.1f;
 		private readonly float m_Stiffness = 0f;
+		private readonly float m_Stretch = 0.5f;
 		private readonly bool m_NeedDistanceConstraint = true;
 		private readonly bool m_NeedBendConstraint = true;
+		private readonly bool m_UseStretchFactor = false;
 
 		public RopeArgs(RopeArgsBuilder builder)
 		{
@@ -19,8 +22,10 @@ namespace FakePhysics.SoftBodyDynamics
 			m_Density = builder.Density;
 			m_Radius = builder.Radius;
 			m_Stiffness = builder.Stiffness;
+			m_Stretch = builder.Stretch;
 			m_NeedDistanceConstraint = builder.NeedDistanceConstraint;
 			m_NeedBendConstraint = builder.NeedBendConstraint;
+			m_UseStretchFactor = builder.UseStretchFactor;
 		}
 
 		public float SpanDistance => m_SpanDistance;
@@ -33,9 +38,13 @@ namespace FakePhysics.SoftBodyDynamics
 
 		public float Stiffness => m_Stiffness;
 
+		public float Stretch => m_Stretch;
+
 		public bool NeedDistanceConstraint => m_NeedDistanceConstraint;
 
 		public bool NeedBendConstraint => m_NeedBendConstraint;
+
+		public bool UseStretchFactor => m_UseStretchFactor;
 
 		public float Mass => m_Density * Volume;
 
@@ -49,8 +58,10 @@ namespace FakePhysics.SoftBodyDynamics
 		public float Density = 7800f;
 		public float Radius = 0.1f;
 		public float Stiffness = 0f;
+		public float Stretch = 0.5f;
 		public bool NeedDistanceConstraint = true;
 		public bool NeedBendConstraint = true;
+		public bool UseStretchFactor = false;
 
 		public RopeArgsBuilder SetSpanDistance(float spanDistance)
 		{
@@ -82,6 +93,12 @@ namespace FakePhysics.SoftBodyDynamics
 			return this;
 		}
 
+		public RopeArgsBuilder SetStretch(float stretch)
+		{
+			Stretch = stretch;
+			return this;
+		}
+
 		public RopeArgsBuilder SetNeedDistanceConstraint(bool needDistanceConstraint)
 		{
 			NeedDistanceConstraint = needDistanceConstraint;
@@ -91,6 +108,12 @@ namespace FakePhysics.SoftBodyDynamics
 		public RopeArgsBuilder SetNeedBendConstraint(bool needBendConstraint)
 		{
 			NeedBendConstraint = needBendConstraint;
+			return this;
+		}
+
+		public RopeArgs SetUseStretchFactor(bool useStretchFactor)
+		{
+			UseStretchFactor = useStretchFactor;
 			return this;
 		}
 
