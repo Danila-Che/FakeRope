@@ -3,7 +3,13 @@ using FakePhysics.Utilities;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+
+#if USE_UNITY_ENTITIES
+
 using Unity.Entities;
+
+#endif
+
 using Unity.Mathematics;
 using UnityEngine.Profiling;
 
@@ -52,8 +58,12 @@ namespace FakePhysics.Dynamics
 
 		private SolverArgs m_SolverArgs;
 
+#if USE_UNITY_ENTITIES
+
 		private EntityManager m_EntityManager;
 		private World m_CustomWorld;
+
+#endif
 
 		public FakeSolver()
 		{
@@ -67,6 +77,8 @@ namespace FakePhysics.Dynamics
 
 		public List<Contact> ContactPairs => m_Contacts;
 
+#if USE_UNITY_ENTITIES
+
 		public EntityManager EntityManager => m_EntityManager;
 
 		public World DynamicWorld => m_CustomWorld;
@@ -77,12 +89,18 @@ namespace FakePhysics.Dynamics
 			m_EntityManager = m_CustomWorld.EntityManager;
 		}
 
+#endif
+
 		public void Dispose()
 		{
+#if USE_UNITY_ENTITIES
+
 			if (m_CustomWorld.IsCreated)
 			{
 				m_CustomWorld.Dispose();
 			}
+
+#endif
 		}
 
 		public void RegisterArgs(SolverArgs solverArgs)
