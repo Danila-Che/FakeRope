@@ -10,12 +10,12 @@ namespace FakePhysics.Controllers
 		[Serializable]
 		private struct SourceAnchor
 		{
-			public FakeRigidBodyController RigidBody;
+			public FakeRigidBodyControllerBase RigidBody;
 			public SlingingAnchor Anchor;
 		}
 
 		[SerializeField] private SourceAnchor[] m_SourceAnchors;
-		[SerializeField] private FakeRigidBodyController m_Target;
+		[SerializeField] private FakeRigidBodyControllerBase m_Target;
 		[SerializeField] private SlingingAnchor[] m_TargetAnchors;
 
 		private readonly Connector m_Connector = new();

@@ -16,9 +16,9 @@ namespace FakePhysics.Controllers
 		}
 
 		public void Connect(
-			FakeRigidBodyController sourceRigidBody,
+			FakeRigidBodyControllerBase sourceRigidBody,
 			SlingingAnchor sourceAnchor,
-			FakeRigidBodyController targetRigidBody,
+			FakeRigidBodyControllerBase targetRigidBody,
 			SlingingAnchor[] targetAnchors)
 		{
 			var ropes = ConnectWithAnchors(sourceRigidBody, sourceAnchor, targetRigidBody, targetAnchors);
@@ -38,9 +38,9 @@ namespace FakePhysics.Controllers
 		}
 
 		private List<FakeRopeController> ConnectWithAnchors(
-			FakeRigidBodyController sourceRigidBody,
+			FakeRigidBodyControllerBase sourceRigidBody,
 			SlingingAnchor sourceAnchor,
-			FakeRigidBodyController targetRigidBody,
+			FakeRigidBodyControllerBase targetRigidBody,
 			SlingingAnchor[] targetAnchors)
 		{
 			var ropes = new List<FakeRopeController>(targetAnchors.Length);
@@ -54,7 +54,7 @@ namespace FakePhysics.Controllers
 			return ropes;
 		}
 
-		private FakeRopeController CreateRope(FakeRigidBodyController rigidBody, SlingingAnchor anchor)
+		private FakeRopeController CreateRope(FakeRigidBodyControllerBase rigidBody, SlingingAnchor anchor)
 		{
 			var rope = m_CreateRope();
 			//var acnchorLocalAttachment = m_InteractionHook.AttachPoint - m_InteractionHook.GetRididBody().transform.position;

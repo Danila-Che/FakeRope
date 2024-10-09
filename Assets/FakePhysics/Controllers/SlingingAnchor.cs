@@ -18,7 +18,7 @@ namespace FakePhysics.Controllers
 
 #endif
 
-		public float3 GetAnchorLocalPosition(FakeRigidBodyController targetRigidBody)
+		public float3 GetAnchorLocalPosition(FakeRigidBodyControllerBase targetRigidBody)
 		{
 			return transform.position - targetRigidBody.transform.position;
 		}

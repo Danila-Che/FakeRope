@@ -1,5 +1,4 @@
 using FakePhysics.RigidBodyDynamics;
-using FakePhysics.Utilities;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -9,11 +8,11 @@ namespace FakePhysics.Controllers
 	public class FakeAttachementJointController : MonoBehaviour
 	{
 		[Header("First Body")]
-		[SerializeField] private FakeRigidBodyController m_AnchorBody;
+		[SerializeField] private FakeRigidBodyControllerBase m_AnchorBody;
 		[SerializeField] private float3 m_AnchorLocalAttachement;
 
 		[Header("Second Body")]
-		[SerializeField] private FakeRigidBodyController m_TargetBody;
+		[SerializeField] private FakeRigidBodyControllerBase m_TargetBody;
 		[SerializeField] private float3 m_TargetLocalAttachement;
 
 		private FakeSolverController m_FakeSolverController;
