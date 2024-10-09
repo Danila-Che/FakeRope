@@ -10,7 +10,7 @@ namespace FakePhysics.RigidBodyDynamics
 	{
 		private const float k_MaxRotationPerSubstep = 0.5f;
 
-		private readonly bool m_IsKinematic;
+		private bool m_IsKinematic;
 		private FakeBoxCollider m_BoxCollider;
 
 		private FakePose m_Pose;
@@ -91,15 +91,17 @@ namespace FakePhysics.RigidBodyDynamics
 
 		public float3 InverseInertiaTensor => m_InverseInertiaTensor;
 
+		public void UpdateWith(Rigidbody rigidbody)
+		{
+			m_IsKinematic = rigidbody.isKinematic;
+			m_Pose = rigidbody.ToPose();
+			m_Velocity = rigidbody.velocity;
+			m_AngularVelocity = rigidbody.velocity;
+		}
+		
 		public void UpdateWith(FakePose pose)
 		{
 			m_Pose = pose;
-		}
-
-		public void UpdateWith(float3 velocity, float3 angularVelocity)
-		{
-			m_Velocity = velocity;
-			m_AngularVelocity = angularVelocity;
 		}
 
 		public void BeginStep()

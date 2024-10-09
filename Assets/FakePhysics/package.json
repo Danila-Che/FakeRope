@@ -1,7 +1,7 @@
 {
     "name": "com.danilache.fakerope",
     "displayName": "Fake Rope (XPBD)",
-    "version": "0.2.1",
+    "version": "0.2.2",
     "unity": "2019.1",
     "description": "PBD rope for Unity with XPBD dynamics",
     "keywords": ["Rope", "Cabel", "Chain", "PBD", "XPBD", "Dynamics"],

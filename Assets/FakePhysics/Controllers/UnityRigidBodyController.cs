@@ -44,10 +44,7 @@ namespace FakePhysics.Controllers
 
 		private void OnBeginStep()
 		{
-			if (m_Body.IsKinematic) { return; }
-
-			m_Body.UpdateWith(m_Rigidbody.ToPose());
-			m_Body.UpdateWith(m_Rigidbody.velocity, m_Rigidbody.angularVelocity);
+			m_Body.UpdateWith(m_Rigidbody);
 			m_Body.BeginStep();
 		}
 
