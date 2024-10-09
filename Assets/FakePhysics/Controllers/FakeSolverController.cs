@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace FakePhysics.Controllers
 {
-	internal enum ExecutionOrder
+	public enum ExecutionOrder
 	{
 		Collider,
 		Solver,

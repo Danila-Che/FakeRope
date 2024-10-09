@@ -566,32 +566,17 @@ namespace FakePhysics.SoftBodyDynamics
 
 			Profiler.BeginSample("Attachment Constraint");
 
-			if (m_RopeArgs.UseStretchFactor)
-			{
-				SolveAttachmentConstraint(
-					particleIndex: 0,
-					m_FakeJoint.TargetBody,
-					m_FakeJoint.TargetGlobalPose.Position);
+			SolveAttachmentConstraint(
+				particleIndex: 0,
+				m_FakeJoint.TargetBody,
+				m_FakeJoint.TargetGlobalPose.Position,
+				deltaTime);
 
-				SolveAttachmentConstraint(
-					particleIndex: ^1,
-					m_FakeJoint.AnchorBody,
-					m_FakeJoint.AnchorGlobalPose.Position);
-			}
-			else
-			{
-				SolveAttachmentConstraint(
-					particleIndex: 0,
-					m_FakeJoint.TargetBody,
-					m_FakeJoint.TargetGlobalPose.Position,
-					deltaTime);
-
-				SolveAttachmentConstraint(
-					particleIndex: ^1,
-					m_FakeJoint.AnchorBody,
-					m_FakeJoint.AnchorGlobalPose.Position,
-					deltaTime);
-			}
+			SolveAttachmentConstraint(
+				particleIndex: ^1,
+				m_FakeJoint.AnchorBody,
+				m_FakeJoint.AnchorGlobalPose.Position,
+				deltaTime);
 
 			Profiler.EndSample();
 		}
@@ -607,38 +592,28 @@ namespace FakePhysics.SoftBodyDynamics
 			}
 			else if (math.any(correction))
 			{
-				var bodyInverseMass = body.GetInverseMass(math.normalize(correction), globalPosition);
-				var w = bodyInverseMass + particle.InverseMass;
-				var k0 = particle.InverseMass / w;
+				if (m_RopeArgs.UseStretchFactor)
+				{
+					particle.Position -= m_RopeArgs.Stretch * correction;
 
-				particle.Position -= k0 * correction;
+					body.ApplyCorrectionVelocity((1 - m_RopeArgs.Stretch) * correction, globalPosition);
+				}
+				else
+				{
+					var bodyInverseMass = body.GetInverseMass(math.normalize(correction), globalPosition);
+					var w = bodyInverseMass + particle.InverseMass;
+					var k0 = particle.InverseMass / w;
 
-				DynamicsComputations.ApplyBodyPairCorrection(
-					body,
-					particle.InverseMass,
-					correction,
-					0f,
-					deltaTime,
-					globalPosition);
-			}
+					particle.Position -= k0 * correction;
 
-			m_Particles[particleIndex] = particle;
-		}
-
-		private void SolveAttachmentConstraint(Index particleIndex, FakeRigidBody body, float3 globalPosition)
-		{
-			var particle = m_Particles[particleIndex];
-			var correction = Computations.CalculateCorrection(particle.Position, globalPosition);
-
-			if (body.IsKinematic)
-			{
-				particle.Position -= correction;
-			}
-			else if (math.any(correction))
-			{
-				particle.Position -= m_RopeArgs.Stretch * correction;
-
-				body.ApplyCorrectionRaw((1 - m_RopeArgs.Stretch) * correction, globalPosition);
+					DynamicsComputations.ApplyBodyPairCorrection(
+						body,
+						particle.InverseMass,
+						correction,
+						0f,
+						deltaTime,
+						globalPosition);
+				}
 			}
 
 			m_Particles[particleIndex] = particle;

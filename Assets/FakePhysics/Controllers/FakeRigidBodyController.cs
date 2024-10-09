@@ -7,7 +7,7 @@ namespace FakePhysics.Controllers
 	[SelectionBase]
 	[RequireComponent(typeof(FakeBoxColliderController))]
 	[DefaultExecutionOrder((int)ExecutionOrder.RigidBody)]
-	public class FakeRigidBodyController : MonoBehaviour
+	public class FakeRigidBodyController : FakeRigidBodyControllerBase
 	{
 		private FakeSolverController m_FakeSolverController;
 		private FakeBoxColliderController m_FakeBoxColliderController;
@@ -15,7 +15,7 @@ namespace FakePhysics.Controllers
 
 		private FakeRigidBody m_Body;
 
-		public FakeRigidBody Body => m_Body;
+		public override FakeRigidBody Body => m_Body;
 
 		private void OnEnable()
 		{

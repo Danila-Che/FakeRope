@@ -81,6 +81,10 @@ namespace FakePhysics.RigidBodyDynamics
 
 		public FakePose Pose => m_Pose;
 
+		public float3 Velocity =>  m_Velocity;
+
+		public float3 AngularVelocity => m_AngularVelocity;
+
 		public FakeBoxCollider BoxCollider => m_BoxCollider;
 
 		public float InverseMass => m_InverseMass;
@@ -90,6 +94,12 @@ namespace FakePhysics.RigidBodyDynamics
 		public void UpdateWith(FakePose pose)
 		{
 			m_Pose = pose;
+		}
+
+		public void UpdateWith(float3 velocity, float3 angularVelocity)
+		{
+			m_Velocity = velocity;
+			m_AngularVelocity = angularVelocity;
 		}
 
 		public void BeginStep()
@@ -198,43 +208,18 @@ namespace FakePhysics.RigidBodyDynamics
 		{
 			if (m_IsKinematic) { return; }
 
-			float3 deltaQuaternion;
-			if (position == null)
-			{
-				deltaQuaternion = correction;
-			}
-			else
-			{
-				if (velocityLevel)
-				{
-					m_Velocity += correction * m_InverseMass;
-				}
-				else
-				{
-					m_Pose = Computations.Translate(m_Pose, correction * m_InverseMass);
-				}
-
-				deltaQuaternion = math.cross(position.Value - m_Pose.Position, correction);
-			}
-
-			deltaQuaternion = Computations.InverseRotate(m_Pose, deltaQuaternion);
-			deltaQuaternion *= m_InverseInertiaTensor;
-			deltaQuaternion = Computations.Rotate(m_Pose, deltaQuaternion);
-
-			if (velocityLevel)
-			{
-				m_AngularVelocity += deltaQuaternion;
-			}
-			else
-			{
-				ApplyRotation(deltaQuaternion);
-			}
+			ApplyCorrection(correction, position, m_InverseMass, velocityLevel);
 		}
 
-		public void ApplyCorrectionRaw(float3 correction, float3? position = null, bool velocityLevel = false)
+		public void ApplyCorrectionVelocity(float3 correction, float3? position = null, bool velocityLevel = false)
 		{
 			if (m_IsKinematic) { return; }
 
+			ApplyCorrection(correction, position, inverseMass: 1f, velocityLevel);
+		}
+
+		private void ApplyCorrection(float3 correction, float3? position = null, float inverseMass = 1f, bool velocityLevel = false)
+		{
 			float3 deltaQuaternion;
 			if (position == null)
 			{
@@ -244,11 +229,11 @@ namespace FakePhysics.RigidBodyDynamics
 			{
 				if (velocityLevel)
 				{
-					m_Velocity += correction;
+					m_Velocity += correction * inverseMass;
 				}
 				else
 				{
-					m_Pose = Computations.Translate(m_Pose, correction);
+					m_Pose = Computations.Translate(m_Pose, correction * inverseMass);
 				}
 
 				deltaQuaternion = math.cross(position.Value - m_Pose.Position, correction);
