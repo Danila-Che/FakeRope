@@ -1,0 +1,128 @@
+@startuml FakePhysics.ECS
+
+skinparam classAttributeIconSize 0
+
+package Utilities {
+    struct FakePose {
+        +Position: float3
+        +Rotation: quaternion
+    }
+
+    class CommonUtilities {
+        +{static} ToNumberFormat(format: string, args: object...): string
+
+        +{static} FakePose ToPose(this rigidbody: Rigidbody)
+
+        +{static} FakePose ToPose(this transform: Transform)
+    }
+}
+
+package Dynamics {
+    interface IFakeSubSolver {
+        +Init(world: World, entityManager: EntityManager)
+    }
+
+    interface IFakeDynamicSubSolver {
+        +BeginStep()
+        ' +Step()
+        +EndStep()
+        ' +ApplyAcceleration()
+        ' +ApplyDrag()
+    }
+
+    interface IFakeConstrainedSubSolver {
+        +SolveConstraints()
+    }
+
+    class FakeSolver {
+        +Dispose()
+        +Register(subSolver: IFakeSubSolver)
+        +Register(subSolver: IFakeDynamicSubSolver)
+        +GetSubSolver<T>(): T where T: class, IFakeSubSolver
+        +BeginStep()
+        +EndStep(deltaTime: float)
+    }
+    
+    class FakeSolverArgs {
+        +GravitationalAcceleration: float3
+        +SubIterationsNumber: int
+    }
+
+    FakeSolver "1" --> "*" IFakeSubSolver
+    FakeSolver "1" --> "*" IFakeDynamicSubSolver
+    FakeSolver "1" --> "*" IFakeConstrainedSubSolver
+}
+
+package RigidBodyDynamics {
+    class FakeRigidBodySubSolver implements Dynamics.IFakeSubSolver, Dynamics.IFakeDynamicSubSolver, Dynamics.IFakeConstrainedSubSolver {
+        +Init(world: World, entityManager: EntityManager)
+        +RequireEnity(rigidBody: FakeRigidBody): Entity
+        +RequireEnity(fakeJoint: FakeJoint): Entity
+        +Get(entity: Entity): FakeRigidBody
+        +Set(entity: Entity, rigidbody: FakeRigidBody)
+        +BeginStep()
+        +EndStep(deltaTime: float)
+        -CreateArchetype()
+    }
+
+    class BeginStepSystem
+
+    class EndStepSystem
+
+    class AttachmentConstraintSystem
+
+    struct FakeRigidBody implements IComponentData {
+        +IsKinematic: bool
+		+Velocity: float3
+		+AngularVelocity: float3
+		+Drag: float3
+		+AngularDrag: float3
+		+InverseMass: float
+		+InverseInertiaTensor: float3
+    }
+
+    struct FakeJoint implements IComponentData {
+        AnchorBody: Entity
+        TargetBody: Entity
+        AnchorLocalPose: FakePose
+        TargetLocalPose: FakePose
+    }
+
+    FakeRigidBodySubSolver -- FakeRigidBody
+    FakeRigidBodySubSolver -- FakeJoint
+
+    FakeRigidBodySubSolver *--> BeginStepSystem
+    FakeRigidBodySubSolver *--> EndStepSystem
+    FakeRigidBodySubSolver *--> AttachmentConstraintSystem
+
+    FakeRigidBody "+Pose: FakePose" --> FakePose
+    FakeRigidBody "+PreviousPose: FakePose" --> FakePose
+}
+
+package Controllers
+{
+    class FakeSolverController {
+        +<<event>> StepStarting: Action
+        +<<event>> Step: Action
+        +<<event>> StepCompleted: Action
+        +GetSubSolver<T>(): T where T: class, IFakeSubSolver
+    }
+
+    class FakeRigidBodyController {
+        +OnStep()
+        +OnStepCompleted()
+        +CreateFakeRigidBody(): FakeRigidBody
+        UpdateFakeRigidBody(fakeRigidBody: FakeRigidBody): FakeRigidBody
+    }
+
+    class FakeAttachementJointController
+
+    FakeRigidBodyController --> FakeSolverController
+}
+
+
+FakeSolverController *--> FakeSolver
+FakeSolverController *--> FakeRigidBodySubSolver
+FakeRigidBodyController --> FakeRigidBodySubSolver
+
+@enduml

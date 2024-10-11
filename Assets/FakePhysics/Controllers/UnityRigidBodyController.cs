@@ -44,8 +44,8 @@ namespace FakePhysics.Controllers
 
 		private void OnBeginStep()
 		{
-			m_Body.UpdateWith(m_Rigidbody);
 			m_Body.BeginStep();
+			m_Body.UpdateWith(m_Rigidbody);
 		}
 
 		private void OnAfterStep()
@@ -56,8 +56,8 @@ namespace FakePhysics.Controllers
 
 			m_Rigidbody.position = m_Body.Pose.Position;
 			m_Rigidbody.rotation = m_Body.Pose.Rotation;
-			m_Rigidbody.velocity += (Vector3)m_Body.Velocity;
-			m_Rigidbody.angularVelocity += (Vector3)m_Body.AngularVelocity;
+			m_Rigidbody.velocity = m_Body.Velocity;
+			m_Rigidbody.angularVelocity = m_Body.AngularVelocity;
 		}
 	}
 }

@@ -1,8 +1,8 @@
 using Unity.Mathematics;
 
-namespace FakePhysics.Dynamics
+namespace FakePhysics.ECS.Dynamics
 {
-	public interface IDynamicBody
+	public interface IFakeDynamicSubSolver
 	{
 		void BeginStep();
 

@@ -1,11 +1,9 @@
 {
-    "name": "FakePhysics.Sample",
-    "rootNamespace": "FakePhysics.Sample",
+    "name": "FakePhysics.ECS.SoftBodyDynamics",
+    "rootNamespace": "FakePhysics.ECS.SoftBodyDynamics",
     "references": [
-        "GUID:a9c4dbf365ef8224aa044f6b88bbcaf1",
-        "GUID:2fdbc15690c1dc34fbe1c4dcad1d0451",
-        "GUID:5ed897ca03408cb43a8984b373b33851",
-        "GUID:4de9d41bbba519c468ce0210d1cfc874",
+        "GUID:76813d2d8ad138a439f875ab4ac9e2db",
+        "GUID:55b2e9b3e8c3e0446aba5ca4fb39774d",
         "GUID:2665a8d13d1b3f18800f46e256720795",
         "GUID:e0cd26848372d4e5c891c569017e11f1",
         "GUID:734d92eba21c94caba915361bd5ac177",
