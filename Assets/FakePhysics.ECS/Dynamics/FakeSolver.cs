@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Unity.Entities;
+using FakePhysics.ECS.Utilities;
 
 namespace FakePhysics.ECS.Dynamics
 {
@@ -8,7 +8,7 @@ namespace FakePhysics.ECS.Dynamics
 	{
 		private readonly SolverArgs m_SolverArgs;
 
-		private readonly World m_World;
+		private readonly FakeWorld m_World;
 
 		private readonly HashSet<IFakeSubSolver> m_SubSolvers;
 		private readonly HashSet<IFakeDynamicSubSolver> m_FakeDynamicSubSolvers;
@@ -18,7 +18,7 @@ namespace FakePhysics.ECS.Dynamics
 		{
 			m_SolverArgs = solverArgs;
 
-			m_World = new World("Dynamic World");
+			m_World = new FakeWorld();
 
 			m_SubSolvers = new HashSet<IFakeSubSolver>();
 			m_FakeDynamicSubSolvers = new HashSet<IFakeDynamicSubSolver>();
@@ -28,11 +28,7 @@ namespace FakePhysics.ECS.Dynamics
 		public void Dispose()
 		{
 			m_SubSolvers.Clear();
-
-			if (m_World.IsCreated)
-			{
-				m_World.Dispose();
-			}
+			m_World.Dispose();
 		}
 
 		public void Register(IFakeSubSolver subSolver)

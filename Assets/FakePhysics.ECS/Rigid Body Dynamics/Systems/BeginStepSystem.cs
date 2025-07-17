@@ -1,24 +1,39 @@
+using FakePhysics.ECS.Utilities;
 using Unity.Burst;
-using Unity.Entities;
+using Unity.Jobs;
 
 namespace FakePhysics.ECS.RigidBodyDynamics.Systems
 {
-	public partial class BeginStepSystem : SystemBase
+	public class BeginStepSystem : FakeSystemBase
 	{
 		[BurstCompile]
-		private partial struct BeginStepJob : IJobEntity
+		private struct BeginStepJob : IJobParallelFor
 		{
-			public readonly void Execute(ref FakeRigidBody rigidBody)
+			public FakeChunksCollection<FakeRigidBody> FakeRigidBodies;
+
+			public void Execute(int index)
 			{
+				var rigidBody = FakeRigidBodies[index];
+
 				if (rigidBody.IsKinematic) { return; }
 
 				rigidBody.PreviousPose = rigidBody.Pose;
+
+				FakeRigidBodies[index] = rigidBody;
 			}
 		}
 
-		protected override void OnUpdate()
+        protected override void OnCreate()
 		{
-			Dependency = new BeginStepJob().ScheduleParallel(Dependency);
+			RequireAsPrimary<FakeRigidBody>();
+		}
+
+        protected override void OnUpdate()
+		{
+			ScheduleParallel(new BeginStepJob
+			{
+				FakeRigidBodies = Get<FakeRigidBody>(),
+			});
 		}
 	}
 }

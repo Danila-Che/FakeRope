@@ -1,33 +1,45 @@
+using FakePhysics.ECS.Utilities;
 using Unity.Burst;
-using Unity.Entities;
+using Unity.Jobs;
 using Unity.Mathematics;
 
 namespace FakePhysics.ECS.SoftBodyDynamics.Systems
 {
-	public partial class ApplyAccelerationSystem : SystemBase
+	public class ApplyAccelerationSystem : FakeSystemBase
 	{
 		public float3 Acceleration;
 		public float DeltaTime;
 
 		[BurstCompile]
-		private partial struct ApplyAccelerationJob : IJobEntity
+		private struct ApplyAccelerationJob : IJobParallelFor
 		{
+			public FakeChunksCollection<FakeParticle> Particles;
 			public float3 Acceleration;
 			public float DeltaTime;
 
-			public readonly void Execute(ref FakeParticle particle)
+			public void Execute(int index)
 			{
+				var particle = Particles[index];
+				
 				particle.Velocity += Acceleration * DeltaTime;
+				
+				Particles[index] = particle;
 			}
+		}
+
+        protected override void OnCreate()
+		{
+			RequireAsPrimary<FakeParticle>();
 		}
 
 		protected override void OnUpdate()
 		{
-			Dependency = new ApplyAccelerationJob
+			ScheduleParallel(new ApplyAccelerationJob
 			{
+				Particles = Get<FakeParticle>(),
 				Acceleration = Acceleration,
 				DeltaTime = DeltaTime,
-			}.ScheduleParallel(Dependency);
+			});
 		}
 	}
 }

@@ -29,6 +29,8 @@ namespace FakePhysics.ECS.Controllers
 
 		public float Mass => m_Density * Volume;
 
+		public float Stiffness => m_Stiffness;
+
 		private float Volume => math.PI * m_Radius * m_Radius * m_SpanDistance;
 	}
 }

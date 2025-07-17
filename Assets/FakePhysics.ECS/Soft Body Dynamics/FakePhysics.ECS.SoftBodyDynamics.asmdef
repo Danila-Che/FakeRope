@@ -3,10 +3,10 @@
     "rootNamespace": "FakePhysics.ECS.SoftBodyDynamics",
     "references": [
         "GUID:76813d2d8ad138a439f875ab4ac9e2db",
+        "GUID:93cbbeaeffb44e44d84831c53ee89c34",
         "GUID:55b2e9b3e8c3e0446aba5ca4fb39774d",
         "GUID:2665a8d13d1b3f18800f46e256720795",
         "GUID:e0cd26848372d4e5c891c569017e11f1",
-        "GUID:734d92eba21c94caba915361bd5ac177",
         "GUID:d8b63aba1907145bea998dd612889d6b"
     ],
     "includePlatforms": [],

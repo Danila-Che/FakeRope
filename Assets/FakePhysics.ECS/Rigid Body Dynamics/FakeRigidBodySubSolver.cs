@@ -1,59 +1,45 @@
 using FakePhysics.ECS.Dynamics;
 using FakePhysics.ECS.RigidBodyDynamics.Systems;
-using Unity.Entities;
+using FakePhysics.ECS.Utilities;
 using Unity.Mathematics;
 
 namespace FakePhysics.ECS.RigidBodyDynamics
 {
 	public sealed class FakeRigidBodySubSolver : IFakeSubSolver, IFakeDynamicSubSolver, IFakeConstrainedSubSolver
 	{
-		private World m_World;
+		private FakeWorld m_World;
 
 		private BeginStepSystem m_BeginStepSystem;
 		private EndStepSystem m_EndStepSystem;
 		private AttachmentConstraintSystem m_AttachmentConstraintSystem;
 
-		private EntityArchetype m_RigidBodyArchetype;
-		private EntityArchetype m_JointArchetype;
-
-		public void Init(World world)
+		public void Init(FakeWorld world)
 		{
 			m_World = world;
 
-			m_RigidBodyArchetype = m_World.EntityManager.CreateArchetype(typeof(FakeRigidBody));
-			m_JointArchetype = m_World.EntityManager.CreateArchetype(typeof(FakeJoint));
-
-			m_BeginStepSystem = m_World.CreateSystemManaged<BeginStepSystem>();
-			m_EndStepSystem = m_World.CreateSystemManaged<EndStepSystem>();
-			m_AttachmentConstraintSystem = m_World.CreateSystemManaged<AttachmentConstraintSystem>();
+			m_BeginStepSystem = m_World.CreateSystem<BeginStepSystem>();
+			m_EndStepSystem = m_World.CreateSystem<EndStepSystem>();
+			m_AttachmentConstraintSystem = m_World.CreateSystem<AttachmentConstraintSystem>();
 		}
 
-		public Entity RequireEntity(FakeRigidBody rigidBody)
+		public FakeEntity RequireEntity(FakeRigidBody rigidBody)
 		{
-			var entity = m_World.EntityManager.CreateEntity(m_RigidBodyArchetype);
-
-			m_World.EntityManager.SetComponentData(entity, rigidBody);
-
-			return entity;
+			return  m_World.CreateEntity(rigidBody);
 		}
 
-		public Entity RequireEntity(FakeJoint fakeJoint)
+		public FakeEntity RequireEntity(FakeJoint fakeJoint)
 		{
-			var entity = m_World.EntityManager.CreateEntity(m_JointArchetype);
-
-			m_World.EntityManager.SetComponentData(entity, fakeJoint);
-
-			return entity;
+			return m_World.CreateEntity(fakeJoint);
 		}
 
-		public FakeRigidBody Get(Entity entity)
+		public FakeRigidBody Get(FakeEntity entity)
 		{
-			return m_World.EntityManager.GetComponentData<FakeRigidBody>(entity);
+			return m_World.GetComponent<FakeRigidBody>(entity);
 		}
 
-		public void Set(Entity entity, FakeRigidBody rigidBody)
+		public void Set(FakeEntity entity, FakeRigidBody rigidBody)
 		{
-			m_World.EntityManager.SetComponentData(entity, rigidBody);
+			m_World.SetComponent(entity, rigidBody);
 		}
 
 		public void BeginStep()

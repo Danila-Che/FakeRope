@@ -1,30 +1,42 @@
+using FakePhysics.ECS.Utilities;
 using Unity.Burst;
-using Unity.Entities;
+using Unity.Jobs;
 
 namespace FakePhysics.ECS.SoftBodyDynamics.Systems
 {
-    public partial class ApplyDragSystem : SystemBase
+    public class ApplyDragSystem : FakeSystemBase
     {
 		public float DeltaTime;
 
 		[BurstCompile]
-		private partial struct ApplyDragJob : IJobEntity
+		private struct ApplyDragJob : IJobParallelFor
 		{
+			public FakeChunksCollection<FakeParticle> Particles;
 			public float DeltaTime;
 
-			public readonly void Execute(ref FakeParticle particle)
+			public void Execute(int index)
 			{
+				var particle = Particles[index];
+				
 				var drag = particle.Velocity * particle.Drag;
 				particle.Velocity -= particle.InverseMass * DeltaTime * drag;
+			
+				Particles[index] = particle;
 			}
 		}
 
-		protected override void OnUpdate()
+        protected override void OnCreate()
 		{
-			Dependency = new ApplyDragJob
+			RequireAsPrimary<FakeParticle>();
+		}
+
+        protected override void OnUpdate()
+		{
+			ScheduleParallel(new ApplyDragJob
 			{
+				Particles = Get<FakeParticle>(),
 				DeltaTime = DeltaTime,
-			}.ScheduleParallel(Dependency);
+			});
 		}
 	}
 }

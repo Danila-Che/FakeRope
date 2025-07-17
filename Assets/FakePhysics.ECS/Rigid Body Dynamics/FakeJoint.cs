@@ -1,13 +1,11 @@
 using FakePhysics.ECS.Utilities;
-using Unity.Entities;
 
 namespace FakePhysics.ECS.RigidBodyDynamics
 {
-	[WriteGroup(typeof(FakeRigidBody))]
-	public struct FakeJoint : IComponentData
+	public struct FakeJoint
 	{
-		public Entity AnchorBody;
-		public Entity TargetBody;
+		public FakeEntity AnchorBody;
+		public FakeEntity TargetBody;
 		public FakePose AnchorLocalPose;
 		public FakePose TargetLocalPose;
 	}

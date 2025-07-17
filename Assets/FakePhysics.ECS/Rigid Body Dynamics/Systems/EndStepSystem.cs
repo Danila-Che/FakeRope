@@ -1,20 +1,24 @@
+using FakePhysics.ECS.Utilities;
 using Unity.Burst;
-using Unity.Entities;
+using Unity.Jobs;
 using Unity.Mathematics;
 
 namespace FakePhysics.ECS.RigidBodyDynamics.Systems
 {
-	public partial class EndStepSystem : SystemBase
+	public class EndStepSystem : FakeSystemBase
 	{
 		public float DeltaTime;
 
 		[BurstCompile]
-		private partial struct EndStepJob : IJobEntity
+		private struct EndStepJob : IJobParallelFor
 		{
+			public FakeChunksCollection<FakeRigidBody> RigidBodies;
 			public float DeltaTime;
 
-			public readonly void Execute(ref FakeRigidBody rigidBody)
+			public void Execute(int index)
 			{
+				var rigidBody = RigidBodies[index];
+				
 				if (rigidBody.IsKinematic) { return; }
 
 				rigidBody.Velocity = (rigidBody.Pose.Position - rigidBody.PreviousPose.Position) / DeltaTime;
@@ -29,15 +33,23 @@ namespace FakePhysics.ECS.RigidBodyDynamics.Systems
 				{
 					rigidBody.AngularVelocity = -rigidBody.AngularVelocity;
 				}
+
+				RigidBodies[index] = rigidBody;
 			}
+		}
+
+        protected override void OnCreate()
+		{
+			RequireAsPrimary<FakeRigidBody>();
 		}
 
 		protected override void OnUpdate()
 		{
-			Dependency = new EndStepJob
+			ScheduleParallel(new EndStepJob
 			{
+				RigidBodies = Get<FakeRigidBody>(),
 				DeltaTime = DeltaTime,
-			}.ScheduleParallel(Dependency);
+			});
 		}
 	}
 }

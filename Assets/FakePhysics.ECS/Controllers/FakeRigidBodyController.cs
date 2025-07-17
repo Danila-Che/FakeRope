@@ -1,6 +1,5 @@
 using FakePhysics.ECS.RigidBodyDynamics;
 using FakePhysics.ECS.Utilities;
-using Unity.Entities;
 using Unity.Mathematics;
 using UnityEngine;
 
@@ -14,9 +13,9 @@ namespace FakePhysics.ECS.Controllers
 		private FakeSolverController m_FakeSolverController;
 		private FakeRigidBodySubSolver m_FakeRigidBodySubSolver;
 
-		private Entity m_RigidBodyEntity;
+		private FakeEntity m_RigidBodyEntity;
 
-		public override Entity RigidBodyEntity => m_RigidBodyEntity;
+		public override FakeEntity RigidBodyEntity => m_RigidBodyEntity;
 
 		private void OnEnable()
 		{

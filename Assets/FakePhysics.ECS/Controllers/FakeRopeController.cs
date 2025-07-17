@@ -1,3 +1,4 @@
+using FakePhysics.ECS.RigidBodyDynamics;
 using FakePhysics.ECS.SoftBodyDynamics;
 using FakePhysics.ECS.Utilities;
 using Unity.Mathematics;
@@ -39,8 +40,16 @@ namespace FakePhysics.ECS.Controllers
 			{
 				m_FakeSoftBodySubSolver = m_FakeSolverController.GetSubSolver<FakeSoftBodySubSolver>();
 				m_FakeRopeContainer = new FakeRopeContainer(m_RopeSettings);
+				
+				var joint = new FakeJoint
+				{
+					AnchorBody = m_AnchorBody.RigidBodyEntity,
+					TargetBody = m_TargetBody.RigidBodyEntity,
+					AnchorLocalPose = m_AnchorLocalAttachement,
+					TargetLocalPose = m_TargetLocalAttachement,
+				};
 
-				m_FakeRopeContainer.Create(m_FakeSoftBodySubSolver, AnchorGlobalPose, TargetGlobalPose);
+				m_FakeRopeContainer.Create(m_FakeSoftBodySubSolver, joint, AnchorGlobalPose, TargetGlobalPose);
 
 				m_FakeSolverController.StepStarting += OnStepStarting;
 			}
@@ -69,8 +78,8 @@ namespace FakePhysics.ECS.Controllers
 		{
 			for (int i = 0; i < m_FakeRopeContainer.Particles.Count - 1; i++)
 			{
-				var particle0 = m_FakeSoftBodySubSolver.Get(m_FakeRopeContainer.Particles[i]);
-				var particle1 = m_FakeSoftBodySubSolver.Get(m_FakeRopeContainer.Particles[i + 1]);
+				var particle0 = m_FakeSoftBodySubSolver.GetParticle(m_FakeRopeContainer.Particles[i]);
+				var particle1 = m_FakeSoftBodySubSolver.GetParticle(m_FakeRopeContainer.Particles[i + 1]);
 
  				Debug.DrawLine(particle0.Position, particle1.Position, Color.green);
 			}

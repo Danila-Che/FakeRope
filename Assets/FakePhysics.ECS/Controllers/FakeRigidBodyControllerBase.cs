@@ -1,10 +1,10 @@
-using Unity.Entities;
+using FakePhysics.ECS.Utilities;
 using UnityEngine;
 
 namespace FakePhysics.ECS.Controllers
 {
 	public abstract class FakeRigidBodyControllerBase : MonoBehaviour
 	{
-		public abstract Entity RigidBodyEntity { get; }
+		public abstract FakeEntity RigidBodyEntity { get; }
 	}
 }

@@ -1,11 +1,10 @@
 using FakePhysics.ECS.Utilities;
 using System.Runtime.CompilerServices;
-using Unity.Entities;
 using Unity.Mathematics;
 
 namespace FakePhysics.ECS.RigidBodyDynamics
 {
-	public struct FakeRigidBody : IComponentData
+	public struct FakeRigidBody
 	{
 		public bool IsKinematic;
 
@@ -36,7 +35,6 @@ namespace FakePhysics.ECS.RigidBodyDynamics
 			float3 position1)
 		{
 			var correctionLength = math.length(correction);
-
 
 			if (correctionLength < math.EPSILON)
 			{

@@ -7,5 +7,7 @@ namespace FakePhysics.ECS.SoftBodyDynamics
 		float Drag { get; }
 
 		float Mass { get; }
+
+		float Stiffness { get; }
 	}
 }

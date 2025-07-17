@@ -1,29 +1,41 @@
+using FakePhysics.ECS.Utilities;
 using Unity.Burst;
-using Unity.Entities;
+using Unity.Jobs;
 
 namespace FakePhysics.ECS.SoftBodyDynamics.Systems
 {
-    public partial class EndStepSystem : SystemBase
+    public class EndStepSystem : FakeSystemBase
 	{
 		public float DeltaTime;
 
 		[BurstCompile]
-		private partial struct EndStepJob : IJobEntity
+		private struct EndStepJob : IJobParallelFor
 		{
+			public FakeChunksCollection<FakeParticle> Particles;
 			public float DeltaTime;
 
-			public readonly void Execute(ref FakeParticle particle)
+			public void Execute(int index)
 			{
+				var particle = Particles[index];
+				
 				particle.Velocity = (particle.Position - particle.PreviousPosition) / DeltaTime;
+			
+				Particles[index] = particle;
 			}
+		}
+
+        protected override void OnCreate()
+		{
+			RequireAsPrimary<FakeParticle>();
 		}
 
 		protected override void OnUpdate()
 		{
-			Dependency = new EndStepJob
+			ScheduleParallel(new EndStepJob
 			{
+				Particles = Get<FakeParticle>(),
 				DeltaTime = DeltaTime,
-			}.ScheduleParallel(Dependency);
+			});
 		}
 	}
 }
